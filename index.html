@@ -42,9 +42,9 @@
   /* The dot indicator */
   #dot-indicator {
     position: absolute;
-    bottom: 14px;
+    bottom: 4px;
     left: 50%;
-    transform: translateX(-50%) translateY(60px);
+    transform: translateX(-50%);
     width: 43px;
     height: 43px;
     display: flex;
@@ -53,20 +53,13 @@
     background: rgba(217, 217, 217, 0.32);
     border-radius: 21.5px;
     z-index: 15;
-    opacity: 0;
-    transition: transform 0.3s ease, opacity 0.3s ease;
-    pointer-events: none;
-  }
-
-  #dot-indicator.visible {
-    transform: translateX(-50%) translateY(0px);
     opacity: 1;
+    transition: opacity 0.3s ease;
     pointer-events: auto;
     cursor: grab;
   }
 
   #dot-indicator.hidden {
-    transform: translateX(-50%) translateY(60px);
     opacity: 0;
     pointer-events: none;
   }
@@ -231,45 +224,17 @@ const dockContainer = document.getElementById('dock-container');
 const appScreen = document.getElementById('app-screen');
 const appIcons = document.querySelectorAll('.app-icon');
 
-let state = 'idle'; // idle | dot-visible | dragging
+let state = 'idle'; // idle | dragging
 let dragStartY = 0;
 let currentHovered = null;
 
-// Phase 1: Swipe up on the black bar reveals the dot
-swipeBar.addEventListener('pointerdown', (e) => {
-  if (state !== 'idle') return;
-  e.preventDefault();
-  dragStartY = e.clientY;
-  frame.setPointerCapture(e.pointerId);
-
-  const onMove = (e2) => {
-    const dy = dragStartY - e2.clientY;
-    if (dy > 15 && state === 'idle') {
-      state = 'dot-visible';
-      dotIndicator.classList.remove('hidden');
-      dotIndicator.classList.add('visible');
-      frame.removeEventListener('pointermove', onMove);
-      frame.releasePointerCapture(e.pointerId);
-    }
-  };
-
-  const onUp = () => {
-    frame.removeEventListener('pointermove', onMove);
-    frame.removeEventListener('pointerup', onUp);
-  };
-
-  frame.addEventListener('pointermove', onMove);
-  frame.addEventListener('pointerup', onUp);
-});
-
-// Phase 2: Drag the dot to reveal the dock
+// Drag the dot to reveal the dock
 dotIndicator.addEventListener('pointerdown', (e) => {
-  if (state !== 'dot-visible') return;
+  if (state !== 'idle') return;
   e.preventDefault();
   state = 'dragging';
   dragStartY = e.clientY;
 
-  dotIndicator.classList.remove('visible');
   dotIndicator.classList.add('hidden');
 
   dockContainer.classList.remove('animate');
@@ -338,14 +303,12 @@ function resetDock() {
   dockContainer.classList.add('animate');
   dockContainer.classList.remove('visible');
   dotIndicator.classList.remove('hidden');
-  dotIndicator.classList.remove('visible');
 }
 
 // Tap on app screen to dismiss
 appScreen.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   appScreen.classList.remove('open');
-  dotIndicator.classList.remove('visible');
   dotIndicator.classList.remove('hidden');
   state = 'idle';
 });
