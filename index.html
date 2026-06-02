@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=540, user-scalable=no">
+<title>Gesture Interaction Test</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #1a1a1a;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+
+  #frame {
+    position: relative;
+    width: 540px;
+    height: 620px;
+    background: #373737;
+    background: color(display-p3 0.216 0.216 0.216);
+    overflow: hidden;
+  }
+
+  /* Bottom swipe detection bar */
+  #swipe-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 14px;
+    background: #000;
+    z-index: 10;
+    cursor: grab;
+  }
+
+  /* The dot indicator */
+  #dot-indicator {
+    position: absolute;
+    bottom: 14px;
+    left: 50%;
+    transform: translateX(-50%) translateY(60px);
+    width: 43px;
+    height: 43px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(217, 217, 217, 0.32);
+    border-radius: 21.5px;
+    z-index: 15;
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  #dot-indicator.visible {
+    transform: translateX(-50%) translateY(0px);
+    opacity: 1;
+    pointer-events: auto;
+    cursor: grab;
+  }
+
+  #dot-indicator.hidden {
+    transform: translateX(-50%) translateY(60px);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  #dot-indicator .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #D9D9D9;
+    background: color(display-p3 0.851 0.851 0.851);
+  }
+
+  /* App dock */
+  #dock-container {
+    position: absolute;
+    bottom: 64px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    z-index: 20;
+    transform: translateY(120px);
+    opacity: 0;
+    transition: none;
+    pointer-events: none;
+  }
+
+  #dock-container.animate {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+
+  #dock-container.visible {
+    transform: translateY(0px);
+    opacity: 1;
+  }
+
+  #dock {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px 14px 16px 15px;
+    gap: 10px;
+    width: 325px;
+    height: 76px;
+    background: rgba(217, 217, 217, 0.2);
+    background: color(display-p3 0.851 0.851 0.851 / 0.2);
+    border-radius: 8px;
+  }
+
+  #dock-icons {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 19px;
+    width: 296px;
+    height: 44px;
+  }
+
+  .app-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 22px;
+    flex: none;
+    transition: transform 0.15s ease;
+    position: relative;
+  }
+
+  .app-icon.hovered {
+    transform: scale(1.4);
+  }
+
+  /* Search icon */
+  #icon-search {
+    background: #DADADA;
+    background: color(display-p3 0.855 0.855 0.855);
+    position: relative;
+    overflow: visible;
+  }
+
+  #icon-search svg {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  #icon-green {
+    background: #BEDE72;
+    background: color(display-p3 0.769 0.867 0.498);
+  }
+
+  #icon-cyan {
+    background: #74FFEE;
+    background: color(display-p3 0.604 1.000 0.933);
+  }
+
+  #icon-pink {
+    background: #FFBBBC;
+    background: color(display-p3 1.000 0.745 0.745);
+  }
+
+  #icon-purple {
+    background: #D4B2FF;
+    background: color(display-p3 0.812 0.702 1.000);
+  }
+
+  /* Opened app screen */
+  #app-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+
+  #app-screen.open {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+  }
+</style>
+</head>
+<body>
+
+<div id="frame">
+  <div id="swipe-bar"></div>
+
+  <div id="dot-indicator">
+    <div class="dot"></div>
+  </div>
+
+  <div id="dock-container">
+    <div id="dock">
+      <div id="dock-icons">
+        <div class="app-icon" id="icon-search" data-color="#DADADA">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <circle cx="9.5" cy="9.5" r="7" stroke="white" stroke-width="2" fill="none"/>
+            <line x1="14.5" y1="14.5" x2="20" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="app-icon" id="icon-green" data-color="#BEDE72"></div>
+        <div class="app-icon" id="icon-cyan" data-color="#74FFEE"></div>
+        <div class="app-icon" id="icon-pink" data-color="#FFBBBC"></div>
+        <div class="app-icon" id="icon-purple" data-color="#D4B2FF"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-screen"></div>
+</div>
+
+<script>
+const frame = document.getElementById('frame');
+const swipeBar = document.getElementById('swipe-bar');
+const dotIndicator = document.getElementById('dot-indicator');
+const dockContainer = document.getElementById('dock-container');
+const appScreen = document.getElementById('app-screen');
+const appIcons = document.querySelectorAll('.app-icon');
+
+let state = 'idle'; // idle | dot-visible | dragging
+let dragStartY = 0;
+let currentHovered = null;
+
+// Phase 1: Swipe up on the black bar reveals the dot
+swipeBar.addEventListener('pointerdown', (e) => {
+  if (state !== 'idle') return;
+  e.preventDefault();
+  dragStartY = e.clientY;
+  frame.setPointerCapture(e.pointerId);
+
+  const onMove = (e2) => {
+    const dy = dragStartY - e2.clientY;
+    if (dy > 15 && state === 'idle') {
+      state = 'dot-visible';
+      dotIndicator.classList.remove('hidden');
+      dotIndicator.classList.add('visible');
+      frame.removeEventListener('pointermove', onMove);
+      frame.releasePointerCapture(e.pointerId);
+    }
+  };
+
+  const onUp = () => {
+    frame.removeEventListener('pointermove', onMove);
+    frame.removeEventListener('pointerup', onUp);
+  };
+
+  frame.addEventListener('pointermove', onMove);
+  frame.addEventListener('pointerup', onUp);
+});
+
+// Phase 2: Drag the dot to reveal the dock
+dotIndicator.addEventListener('pointerdown', (e) => {
+  if (state !== 'dot-visible') return;
+  e.preventDefault();
+  state = 'dragging';
+  dragStartY = e.clientY;
+
+  dotIndicator.classList.remove('visible');
+  dotIndicator.classList.add('hidden');
+
+  dockContainer.classList.remove('animate');
+  void dockContainer.offsetWidth;
+  dockContainer.classList.add('visible');
+
+  frame.setPointerCapture(e.pointerId);
+
+  const onMove = (e2) => {
+    if (state !== 'dragging') return;
+    const frameRect = frame.getBoundingClientRect();
+    const pointerX = e2.clientX - frameRect.left;
+    const pointerY = e2.clientY - frameRect.top;
+
+    let hoveredIcon = null;
+    appIcons.forEach(icon => {
+      const rect = icon.getBoundingClientRect();
+      const iconCenterX = rect.left + rect.width / 2 - frameRect.left;
+      const iconCenterY = rect.top + rect.height / 2 - frameRect.top;
+      const dist = Math.sqrt((pointerX - iconCenterX) ** 2 + (pointerY - iconCenterY) ** 2);
+
+      if (dist < 30) {
+        hoveredIcon = icon;
+      }
+    });
+
+    if (currentHovered && currentHovered !== hoveredIcon) {
+      currentHovered.classList.remove('hovered');
+    }
+    if (hoveredIcon) {
+      hoveredIcon.classList.add('hovered');
+    }
+    currentHovered = hoveredIcon;
+  };
+
+  const onUp = (e2) => {
+    frame.removeEventListener('pointermove', onMove);
+    frame.removeEventListener('pointerup', onUp);
+
+    if (currentHovered) {
+      const color = currentHovered.dataset.color;
+      openApp(color);
+      currentHovered.classList.remove('hovered');
+      currentHovered = null;
+    } else {
+      resetDock();
+    }
+    state = 'idle';
+  };
+
+  frame.addEventListener('pointermove', onMove);
+  frame.addEventListener('pointerup', onUp);
+});
+
+function openApp(color) {
+  appScreen.style.background = color;
+  dockContainer.classList.remove('visible');
+  dockContainer.classList.add('animate');
+
+  requestAnimationFrame(() => {
+    appScreen.classList.add('open');
+  });
+}
+
+function resetDock() {
+  dockContainer.classList.add('animate');
+  dockContainer.classList.remove('visible');
+  dotIndicator.classList.remove('hidden');
+  dotIndicator.classList.remove('visible');
+}
+
+// Tap on app screen to dismiss
+appScreen.addEventListener('pointerdown', (e) => {
+  e.preventDefault();
+  appScreen.classList.remove('open');
+  dotIndicator.classList.remove('visible');
+  dotIndicator.classList.remove('hidden');
+  state = 'idle';
+});
+</script>
+
+</body>
+</html>
