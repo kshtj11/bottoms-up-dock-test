@@ -42,19 +42,13 @@
   /* The dot indicator */
   #dot-indicator {
     position: absolute;
-    bottom: 4px;
+    bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 43px;
-    height: 43px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(217, 217, 217, 0.32);
-    border-radius: 21.5px;
+    width: 96px;
+    height: 48px;
     z-index: 15;
-    opacity: 1;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.2s ease;
     pointer-events: auto;
     cursor: grab;
   }
@@ -62,14 +56,6 @@
   #dot-indicator.hidden {
     opacity: 0;
     pointer-events: none;
-  }
-
-  #dot-indicator .dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #D9D9D9;
-    background: color(display-p3 0.851 0.851 0.851);
   }
 
   /* App dock */
@@ -193,7 +179,10 @@
   <div id="swipe-bar"></div>
 
   <div id="dot-indicator">
-    <div class="dot"></div>
+    <svg width="96" height="48" viewBox="0 0 96 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path opacity="0.44" d="M48 0C74.5097 0 96 21.4903 96 48H0C0 21.4903 21.4903 0 48 0Z" fill="#4A4A4A" style="fill:#4A4A4A;fill:color(display-p3 0.2885 0.2885 0.2885);fill-opacity:1;"/>
+      <path d="M48 18C64.5685 18 78 31.4315 78 48H18C18 31.4315 31.4315 18 48 18Z" fill="#D9D9D9" style="fill:#D9D9D9;fill:color(display-p3 0.8510 0.8510 0.8510);fill-opacity:1;"/>
+    </svg>
   </div>
 
   <div id="dock-container">
