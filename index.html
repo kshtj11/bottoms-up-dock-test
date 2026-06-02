@@ -430,6 +430,10 @@ dotIndicator.addEventListener('pointerdown', (e) => {
       hideDock();
       dotIndicator.classList.remove('hidden');
       state = wasAppOpen ? 'app-open' : 'idle';
+    } else if (dy > 300) {
+      // Very high swipe → go home
+      hideDock();
+      goHome();
     } else if (dy > 25) {
       // Released up without hitting icon → show recents
       hideDock();
@@ -451,6 +455,13 @@ function openApp(color) {
   appScreen.classList.add('open');
   dotIndicator.classList.remove('hidden');
   state = 'app-open';
+}
+
+function goHome() {
+  appScreen.classList.remove('open');
+  recentsOverlay.classList.remove('visible');
+  dotIndicator.classList.remove('hidden');
+  state = 'idle';
 }
 
 function hideDock() {
