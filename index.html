@@ -395,13 +395,13 @@ dotIndicator.addEventListener('pointerdown', (e) => {
     if (dy > peakDy) peakDy = dy;
 
     // Show recents as soon as threshold is crossed
-    if (dy > 25 && !recentsShown) {
+    if (dy > 100 && !recentsShown) {
       recentsShown = true;
       showRecents();
     }
 
     // Hide recents if dragged back down
-    if (recentsShown && dy < 15) {
+    if (recentsShown && dy < 60) {
       recentsShown = false;
       recentsOverlay.classList.remove('visible');
     }
@@ -447,7 +447,7 @@ dotIndicator.addEventListener('pointerdown', (e) => {
       // Very high swipe → go home
       hideDock();
       goHome();
-    } else if (recentsShown && dy > 15) {
+    } else if (recentsShown && dy > 60) {
       // Recents already showing, stay in recents
       hideDock();
       dotIndicator.classList.remove('hidden');
