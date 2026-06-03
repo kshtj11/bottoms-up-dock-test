@@ -87,6 +87,7 @@
   #recents-preview.visible {
     opacity: 1;
     transform: scale(1);
+    pointer-events: auto;
   }
   #recents-track {
     display: flex;
@@ -253,31 +254,34 @@ const APP_COLORS = {
 // Recent apps stack — index 0 is most recent (shown in middle of preview)
 let recents = ['#E8A87C', '#85CDCA', '#C38D9E'];
 
+const CARD_W = 324, CARD_GAP = 44, CARD_STEP = CARD_W + CARD_GAP; // 368
+let recentsCards = [];   // colors laid out left->right (oldest -> newest)
+let recentsIndex = 0;    // index of the currently centered card
+
 function buildRecentsPreview() {
   recentsTrack.innerHTML = '';
-  // Show up to 3: [second, mostRecent(center), third]
-  const order = [];
-  if (recents.length >= 1) {
-    // center = recents[0]; neighbors fill sides
-    const center = recents[0];
-    const left = recents[1] || recents[0];
-    const right = recents[2] || recents[1] || recents[0];
-    order.push(left, center, right);
-  }
-  order.forEach((color, i) => {
+  recentsCards = recents.slice().reverse(); // rightmost = most recent
+  recentsCards.forEach((color) => {
     const card = document.createElement('div');
     card.className = 'preview-card';
     card.style.background = color;
     card.dataset.color = color;
-    // Tapping a card (when recents are latched open) opens that app
-    card.addEventListener('pointerdown', (ev) => {
-      if (!recentsLatched) return;
-      ev.stopPropagation();
-      unlatchRecents();
-      openApp(color, true);
-    });
     recentsTrack.appendChild(card);
   });
+  recentsIndex = recentsCards.length - 1; // start on most recent (centered)
+  setRecentsOffset(offsetForIndex(recentsIndex), false);
+}
+
+function offsetForIndex(i) {
+  const N = recentsCards.length;
+  return -(i - (N - 1) / 2) * CARD_STEP;
+}
+
+function setRecentsOffset(px, animate) {
+  recentsTrack.style.transition = animate
+    ? 'transform 0.28s cubic-bezier(0.22,1,0.36,1)'
+    : 'none';
+  recentsTrack.style.transform = `translateX(${px}px)`;
 }
 
 const RECENT_INDEX = 2; // center cyan icon position in dockIcons
@@ -385,13 +389,14 @@ function collapseDock() {
 
 function latchRecents() {
   recentsLatched = true;
-  dock.classList.remove('revealed');
+  dock.classList.add('revealed'); // dock stays persistent on recents
   recentsPreview.classList.add('visible');
 }
 
 function unlatchRecents() {
   recentsLatched = false;
   recentsPreview.classList.remove('visible');
+  dock.classList.remove('revealed');
 }
 
 function openActive() {
@@ -426,11 +431,53 @@ appScreen.addEventListener('pointerdown', (e) => {
   }
 });
 
-// Tap anywhere outside the cards (while recents are latched) to dismiss
+// Horizontal swipe + tap on the latched recents carousel
+let rDragging = false, rStartX = 0, rBaseOffset = 0, rMoved = false;
+
+recentsPreview.addEventListener('pointerdown', (e) => {
+  if (!recentsLatched) return;
+  rDragging = true;
+  rMoved = false;
+  rStartX = e.clientX;
+  rBaseOffset = offsetForIndex(recentsIndex);
+  recentsPreview.setPointerCapture(e.pointerId);
+});
+
+recentsPreview.addEventListener('pointermove', (e) => {
+  if (!rDragging) return;
+  const dx = e.clientX - rStartX;
+  if (Math.abs(dx) > 8) rMoved = true;
+  setRecentsOffset(rBaseOffset + dx, false);
+});
+
+recentsPreview.addEventListener('pointerup', (e) => {
+  if (!rDragging) return;
+  rDragging = false;
+  const dx = e.clientX - rStartX;
+
+  if (!rMoved) {
+    // It was a tap, not a swipe → open the tapped card's app
+    const card = e.target.closest('.preview-card');
+    if (card) {
+      unlatchRecents();
+      openApp(card.dataset.color, true);
+    }
+    return;
+  }
+
+  // Snap to the nearest card (a decisive flick advances one card)
+  let delta = Math.round(-dx / CARD_STEP);
+  if (delta === 0 && Math.abs(dx) > CARD_STEP * 0.22) delta = dx < 0 ? 1 : -1;
+  recentsIndex = Math.max(0, Math.min(recentsCards.length - 1, recentsIndex + delta));
+  setRecentsOffset(offsetForIndex(recentsIndex), true);
+});
+
+// Tap outside the carousel/dock (while latched) to dismiss to home
 frame.addEventListener('pointerdown', (e) => {
   if (!recentsLatched || dragging) return;
-  if (e.target.closest('.preview-card')) return; // card handles its own tap
-  if (e.target.closest('#deadzone')) return;     // deadzone starts a new gesture
+  if (e.target.closest('#recents-preview')) return; // carousel handles its own input
+  if (e.target.closest('#dock')) return;            // dock is persistent
+  if (e.target.closest('#deadzone')) return;         // deadzone starts a new gesture
   unlatchRecents();
 });
 
