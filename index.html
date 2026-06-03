@@ -27,193 +27,12 @@
     background: color(display-p3 0.216 0.216 0.216);
   }
 
-  /* Full-screen app view */
-  #app-screen {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 5;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
-  }
-
-  #app-screen.open {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  /* Recents view */
-  #recents-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 30;
-    background: rgba(0, 0, 0, 0.6);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s ease;
-  }
-
-  #recents-overlay.visible {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  #recents-empty {
-    color: rgba(255,255,255,0.4);
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    margin-bottom: 180px;
-  }
-
-  #recents-cards {
-    display: flex;
-    align-items: center;
-    align-self: flex-start;
-    gap: 16px;
-    margin-bottom: 20px;
-    overflow: visible;
-    will-change: transform;
-  }
-
-  .recent-card {
-    width: 280px;
-    height: 360px;
-    border-radius: 16px;
-    flex: none;
-    cursor: pointer;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-    will-change: transform;
-  }
-
-  /* Recents dock */
-  #recents-dock {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 16px 14px 16px 15px;
-    gap: 10px;
-    width: 325px;
-    height: 76px;
-    background: rgba(217, 217, 217, 0.2);
-    background: color(display-p3 0.851 0.851 0.851 / 0.2);
-    border-radius: 8px;
-    margin-bottom: 44px;
-  }
-
-  #recents-dock-icons {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 19px;
-    width: 296px;
-    height: 44px;
-  }
-
-  /* The handle */
-  #dot-indicator {
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 96px;
-    height: 48px;
-    z-index: 40;
-    transition: opacity 0.2s ease;
-    pointer-events: auto;
-    cursor: grab;
-  }
-
-  #dot-indicator.hidden {
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  /* App dock (appears on swipe up) */
-  #dock-container {
-    position: absolute;
-    bottom: 44px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    z-index: 40;
-    transform: translateY(120px);
-    opacity: 0;
-    transition: none;
-    pointer-events: none;
-  }
-
-  #dock-container.animate {
-    transition: transform 0.3s ease, opacity 0.3s ease;
-  }
-
-  #dock-container.visible {
-    transform: translateY(0px);
-    opacity: 1;
-  }
-
-  #dock {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 16px 14px 16px 15px;
-    gap: 10px;
-    width: 325px;
-    height: 76px;
-    background: rgba(217, 217, 217, 0.2);
-    background: color(display-p3 0.851 0.851 0.851 / 0.2);
-    border-radius: 8px;
-  }
-
-  #dock-icons {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 19px;
-    width: 296px;
-    height: 44px;
-  }
-
-  .app-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 22px;
-    flex: none;
-    transition: transform 0.15s ease;
-    position: relative;
-  }
-
-  .app-icon.hovered {
-    transform: scale(1.4);
-  }
-
-  .search-svg {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-  }
-
   /* Home screen */
   #home-screen {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     z-index: 1;
   }
-
   .home-icon {
     position: absolute;
     width: 56px;
@@ -222,20 +41,143 @@
     background: color(display-p3 0.851 0.851 0.851);
     border-radius: 8px;
   }
-
   #home-label {
     position: absolute;
     width: 276px;
     left: 136px;
     top: 496px;
     font-family: 'Inter', sans-serif;
-    font-style: normal;
     font-weight: 500;
     font-size: 16px;
     line-height: 19px;
     text-align: center;
     color: #FFFFFF;
-    color: color(display-p3 1.000 1.000 1.000);
+  }
+
+  /* Full-screen opened app */
+  #app-screen {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+  }
+  #app-screen.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Recent apps preview (Frame 36) */
+  #recents-preview {
+    position: absolute;
+    top: 113px;
+    left: 0;
+    width: 540px;
+    height: 372px;
+    z-index: 10;
+    display: flex;
+    justify-content: center;
+    overflow: visible;
+    opacity: 0;
+    transform: scale(0.92);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+  }
+  #recents-preview.visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+  #recents-track {
+    display: flex;
+    gap: 44px;
+    align-items: center;
+  }
+  .preview-card {
+    width: 324px;
+    height: 372px;
+    border-radius: 22px;
+    flex: none;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  }
+
+  /* Dock (Frame 5) */
+  #dock {
+    position: absolute;
+    left: 50%;
+    bottom: 26px; /* 16px deadzone + 10px gap */
+    transform: translateX(-50%) translateY(140px);
+    width: 349px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 14px 0 15px;
+    background: rgba(217, 217, 217, 0.2);
+    background: color(display-p3 0.851 0.851 0.851 / 0.2);
+    border-radius: 40px;
+    z-index: 20;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), opacity 0.2s ease;
+  }
+  #dock.revealed {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+
+  #dock-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    width: 320px;
+    height: 64px;
+  }
+
+  .dock-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: width 0.18s cubic-bezier(0.22,1,0.36,1), height 0.18s cubic-bezier(0.22,1,0.36,1);
+    position: relative;
+  }
+  .dock-icon.active {
+    width: 64px;
+    height: 64px;
+  }
+
+  .icon-search { background: #DADADA; background: color(display-p3 0.855 0.855 0.855); }
+  .icon-green  { background: #BEDE72; background: color(display-p3 0.769 0.867 0.498); }
+  .icon-cyan   { background: #74FFEE; background: color(display-p3 0.604 1.000 0.933); }
+  .icon-pink   { background: #FFBBBC; background: color(display-p3 1.000 0.745 0.745); }
+  .icon-purple { background: #D4B2FF; background: color(display-p3 0.812 0.702 1.000); }
+
+  .search-svg {
+    width: 22px;
+    height: 22px;
+    transition: transform 0.18s ease;
+  }
+  .dock-icon.active .search-svg {
+    transform: scale(1.3);
+  }
+
+  /* Deadzone (Rectangle 37) */
+  #deadzone {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 16px;
+    background: #111111;
+    background: color(display-p3 0.067 0.067 0.067);
+    z-index: 30;
+    cursor: grab;
   }
 </style>
 </head>
@@ -263,336 +205,186 @@
     <div id="home-label">home screen with something and all</div>
   </div>
 
-  <!-- Full screen app view -->
+  <!-- Opened app -->
   <div id="app-screen"></div>
 
-  <!-- Recents overlay -->
-  <div id="recents-overlay">
-    <div id="recents-empty">No recent apps</div>
-    <div id="recents-cards"></div>
-    <div id="recents-dock">
-      <div id="recents-dock-icons">
-        <div class="app-icon" data-color="#DADADA" style="background:#DADADA">
-          <svg class="search-svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <circle cx="9.5" cy="9.5" r="7" stroke="white" stroke-width="2" fill="none"/>
-            <line x1="14.5" y1="14.5" x2="20" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="app-icon" data-color="#FF9F43" style="background:#FF9F43"></div>
-        <div class="app-icon" data-color="#54A0FF" style="background:#54A0FF"></div>
-        <div class="app-icon" data-color="#FF6B6B" style="background:#FF6B6B"></div>
-        <div class="app-icon" data-color="#1DD1A1" style="background:#1DD1A1"></div>
+  <!-- Recent apps preview -->
+  <div id="recents-preview">
+    <div id="recents-track"></div>
+  </div>
+
+  <!-- Dock -->
+  <div id="dock">
+    <div id="dock-row">
+      <div class="dock-icon icon-search" data-app="search">
+        <svg class="search-svg" viewBox="0 0 22 22" fill="none">
+          <circle cx="9.5" cy="9.5" r="7" stroke="white" stroke-width="2" fill="none"/>
+          <line x1="14.5" y1="14.5" x2="20" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
       </div>
+      <div class="dock-icon icon-green" data-app="green"></div>
+      <div class="dock-icon icon-cyan active" data-app="recent"></div>
+      <div class="dock-icon icon-pink" data-app="pink"></div>
+      <div class="dock-icon icon-purple" data-app="purple"></div>
     </div>
   </div>
 
-  <!-- Handle -->
-  <div id="dot-indicator">
-    <svg width="96" height="48" viewBox="0 0 96 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path opacity="0.44" d="M48 0C74.5097 0 96 21.4903 96 48H0C0 21.4903 21.4903 0 48 0Z" fill="#4A4A4A" style="fill:#4A4A4A;fill:color(display-p3 0.2885 0.2885 0.2885);fill-opacity:1;"/>
-      <path d="M48 18C64.5685 18 78 31.4315 78 48H18C18 31.4315 31.4315 18 48 18Z" fill="#D9D9D9" style="fill:#D9D9D9;fill:color(display-p3 0.8510 0.8510 0.8510);fill-opacity:1;"/>
-    </svg>
-  </div>
-
-  <!-- Dock (swipe-up quick access) -->
-  <div id="dock-container">
-    <div id="dock">
-      <div id="dock-icons">
-        <div class="app-icon" id="icon-search" data-color="#DADADA" style="background:#DADADA">
-          <svg class="search-svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <circle cx="9.5" cy="9.5" r="7" stroke="white" stroke-width="2" fill="none"/>
-            <line x1="14.5" y1="14.5" x2="20" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="app-icon" data-color="#FF9F43" style="background:#FF9F43"></div>
-        <div class="app-icon" data-color="#54A0FF" style="background:#54A0FF"></div>
-        <div class="app-icon" data-color="#FF6B6B" style="background:#FF6B6B"></div>
-        <div class="app-icon" data-color="#1DD1A1" style="background:#1DD1A1"></div>
-      </div>
-    </div>
-  </div>
+  <!-- Deadzone -->
+  <div id="deadzone"></div>
 </div>
 
 <script>
 const frame = document.getElementById('frame');
-const dotIndicator = document.getElementById('dot-indicator');
-const dockContainer = document.getElementById('dock-container');
+const deadzone = document.getElementById('deadzone');
+const dock = document.getElementById('dock');
+const dockIcons = Array.from(document.querySelectorAll('.dock-icon'));
 const appScreen = document.getElementById('app-screen');
-const appIcons = document.querySelectorAll('#dock-icons .app-icon');
-const recentsOverlay = document.getElementById('recents-overlay');
-const recentsCards = document.getElementById('recents-cards');
-const recentsEmpty = document.getElementById('recents-empty');
+const recentsPreview = document.getElementById('recents-preview');
+const recentsTrack = document.getElementById('recents-track');
 
-const CARD_W = 280;
-const CARD_GAP = 16;
-const FRAME_W = 540;
-const CENTER_OFFSET = (FRAME_W - CARD_W) / 2; // 130px
+// App color map for full-screen open
+const APP_COLORS = {
+  search: '#DADADA',
+  green:  '#BEDE72',
+  pink:   '#FFBBBC',
+  purple: '#D4B2FF'
+};
 
-let state = 'idle';
-let dragStartY = 0;
-let currentHovered = null;
-let peakDy = 0;
-let recentsCardIndex = 0;
+// Recent apps stack — index 0 is most recent (shown in middle of preview)
+let recents = ['#E8A87C', '#85CDCA', '#C38D9E'];
 
-// Running apps stack — oldest first, newest last (rightmost)
-let runningApps = [];
-
-function addToRunning(color) {
-  runningApps = runningApps.filter(c => c !== color);
-  runningApps.push(color); // newest goes to end (right)
-  rebuildRecentsCards();
-}
-
-function rebuildRecentsCards() {
-  recentsCards.innerHTML = '';
-  if (runningApps.length === 0) {
-    recentsEmpty.style.display = '';
-    return;
+function buildRecentsPreview() {
+  recentsTrack.innerHTML = '';
+  // Show up to 3: [second, mostRecent(center), third]
+  const order = [];
+  if (recents.length >= 1) {
+    // center = recents[0]; neighbors fill sides
+    const center = recents[0];
+    const left = recents[1] || recents[0];
+    const right = recents[2] || recents[1] || recents[0];
+    order.push(left, center, right);
   }
-  recentsEmpty.style.display = 'none';
-  runningApps.forEach(color => {
+  order.forEach((color, i) => {
     const card = document.createElement('div');
-    card.className = 'recent-card';
-    card.dataset.color = color;
+    card.className = 'preview-card';
     card.style.background = color;
-    recentsCards.appendChild(card);
+    recentsTrack.appendChild(card);
   });
 }
 
-function setCardsTransform(offset, animate) {
-  if (animate) {
-    recentsCards.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+const RECENT_INDEX = 2; // center cyan icon position in dockIcons
+
+let dragging = false;
+let revealed = false;
+let activeIndex = RECENT_INDEX;
+let startY = 0;
+
+function setActive(index) {
+  if (index === activeIndex) return;
+  dockIcons[activeIndex].classList.remove('active');
+  dockIcons[index].classList.add('active');
+  activeIndex = index;
+
+  // Recents preview only shows when the recent (center) icon is active
+  if (activeIndex === RECENT_INDEX) {
+    recentsPreview.classList.add('visible');
   } else {
-    recentsCards.style.transition = 'none';
+    recentsPreview.classList.remove('visible');
   }
-  recentsCards.style.transform = `translateX(${offset}px)`;
 }
 
-function getCardOffset(index) {
-  // Center the card at `index` within the frame
-  return CENTER_OFFSET - (index * (CARD_W + CARD_GAP));
+function nearestIconIndex(pointerX) {
+  let best = 0;
+  let bestDist = Infinity;
+  dockIcons.forEach((icon, i) => {
+    const r = icon.getBoundingClientRect();
+    const cx = r.left + r.width / 2;
+    const d = Math.abs(pointerX - cx);
+    if (d < bestDist) { bestDist = d; best = i; }
+  });
+  return best;
 }
 
-// Handle drag (swipe up from handle)
-dotIndicator.addEventListener('pointerdown', (e) => {
-  if (state !== 'idle' && state !== 'app-open') return;
+deadzone.addEventListener('pointerdown', (e) => {
   e.preventDefault();
+  dragging = true;
+  revealed = false;
+  startY = e.clientY;
 
-  const wasAppOpen = state === 'app-open';
-  state = 'dragging';
-  dragStartY = e.clientY;
-  peakDy = 0;
+  // Reset active to center (recent) by default
+  dockIcons.forEach(ic => ic.classList.remove('active'));
+  activeIndex = RECENT_INDEX;
+  dockIcons[RECENT_INDEX].classList.add('active');
 
-  dotIndicator.classList.add('hidden');
-  dockContainer.classList.remove('animate');
-  void dockContainer.offsetWidth;
-  dockContainer.classList.add('visible');
-
+  buildRecentsPreview();
   frame.setPointerCapture(e.pointerId);
 
-  let recentsShown = false;
-
   const onMove = (e2) => {
-    if (state !== 'dragging') return;
-    const dy = dragStartY - e2.clientY;
-    if (dy > peakDy) peakDy = dy;
+    if (!dragging) return;
+    const dy = startY - e2.clientY;
 
-    if (dy > 100 && !recentsShown) {
-      recentsShown = true;
-      showRecents();
+    if (dy > 8 && !revealed) {
+      revealed = true;
+      dock.classList.add('revealed');
+      recentsPreview.classList.add('visible');
     }
 
-    if (recentsShown && dy < 60) {
-      recentsShown = false;
-      recentsOverlay.classList.remove('visible');
+    if (revealed) {
+      const idx = nearestIconIndex(e2.clientX);
+      setActive(idx);
     }
-
-    const frameRect = frame.getBoundingClientRect();
-    const pointerX = e2.clientX - frameRect.left;
-    const pointerY = e2.clientY - frameRect.top;
-
-    let hoveredIcon = null;
-    appIcons.forEach(icon => {
-      const rect = icon.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2 - frameRect.left;
-      const cy = rect.top + rect.height / 2 - frameRect.top;
-      const dist = Math.sqrt((pointerX - cx) ** 2 + (pointerY - cy) ** 2);
-      if (dist < 30) hoveredIcon = icon;
-    });
-
-    if (currentHovered && currentHovered !== hoveredIcon) {
-      currentHovered.classList.remove('hovered');
-    }
-    if (hoveredIcon) {
-      hoveredIcon.classList.add('hovered');
-    }
-    currentHovered = hoveredIcon;
   };
 
   const onUp = (e2) => {
     frame.removeEventListener('pointermove', onMove);
     frame.removeEventListener('pointerup', onUp);
+    dragging = false;
 
-    const dy = dragStartY - e2.clientY;
-
-    if (currentHovered) {
-      const color = currentHovered.dataset.color;
-      recentsOverlay.classList.remove('visible');
-      openApp(color);
-      currentHovered.classList.remove('hovered');
-      currentHovered = null;
-      hideDock();
-    } else if (dy > 300) {
-      hideDock();
-      goHome();
-    } else if (recentsShown && dy > 60) {
-      hideDock();
-      dotIndicator.classList.remove('hidden');
-      state = 'recents';
-    } else if (!wasAppOpen && peakDy < 10 && runningApps.length > 0) {
-      // Tap on handle from home → reopen most recent app
-      hideDock();
-      const lastColor = runningApps[runningApps.length - 1];
-      openApp(lastColor);
-    } else {
-      hideDock();
-      recentsOverlay.classList.remove('visible');
-      dotIndicator.classList.remove('hidden');
-      state = wasAppOpen ? 'app-open' : 'idle';
+    if (revealed) {
+      openActive();
     }
+    // collapse dock
+    dock.classList.remove('revealed');
+    recentsPreview.classList.remove('visible');
   };
 
   frame.addEventListener('pointermove', onMove);
   frame.addEventListener('pointerup', onUp);
 });
 
-function openApp(color) {
-  addToRunning(color);
+function openActive() {
+  const app = dockIcons[activeIndex].dataset.app;
+  let color;
+  if (app === 'recent') {
+    color = recents[0]; // most recent
+  } else {
+    color = APP_COLORS[app];
+  }
+  openApp(color, app !== 'recent');
+}
+
+function openApp(color, addToRecents) {
+  if (addToRecents) {
+    recents = recents.filter(c => c !== color);
+    recents.unshift(color);
+  }
   appScreen.style.background = color;
   appScreen.classList.add('open');
-  dotIndicator.classList.remove('hidden');
-  state = 'app-open';
 }
 
-function goHome() {
-  appScreen.classList.remove('open');
-  recentsOverlay.classList.remove('visible');
-  dotIndicator.classList.remove('hidden');
-  state = 'idle';
-}
-
-function hideDock() {
-  dockContainer.classList.add('animate');
-  dockContainer.classList.remove('visible');
-}
-
-function showRecents() {
-  rebuildRecentsCards();
-  // Start at the rightmost card (most recent)
-  recentsCardIndex = Math.max(0, runningApps.length - 1);
-  setCardsTransform(getCardOffset(recentsCardIndex), false);
-  recentsOverlay.classList.add('visible');
-  dotIndicator.classList.remove('hidden');
-  appScreen.classList.remove('open');
-}
-
-function hideRecents() {
-  recentsOverlay.classList.remove('visible');
-  dotIndicator.classList.remove('hidden');
-  state = 'idle';
-}
-
-// Smooth recents swiping with momentum
-recentsOverlay.addEventListener('pointerdown', (e) => {
-  if (state !== 'recents') return;
-  e.preventDefault();
-
-  const card = e.target.closest('.recent-card');
-  const dockIcon = e.target.closest('#recents-dock-icons .app-icon');
-
-  let startX = e.clientX;
-  let lastX = startX;
-  let lastTime = Date.now();
-  let velocity = 0;
-
-  recentsCards.style.transition = 'none';
-  recentsOverlay.setPointerCapture(e.pointerId);
-
-  const baseOffset = getCardOffset(recentsCardIndex);
-
-  const onMove = (e2) => {
-    const now = Date.now();
-    const dx = e2.clientX - startX;
-    const dt = now - lastTime;
-    if (dt > 0) {
-      velocity = (e2.clientX - lastX) / dt;
+// Tap on opened app to go home
+appScreen.addEventListener('pointerdown', (e) => {
+  // only dismiss if tap is not in the deadzone region (handled separately)
+  if (e.clientY) {
+    const r = frame.getBoundingClientRect();
+    const yInFrame = e.clientY - r.top;
+    if (yInFrame < 604) { // above deadzone
+      appScreen.classList.remove('open');
     }
-    lastX = e2.clientX;
-    lastTime = now;
-
-    // Rubber-band at edges
-    let rawOffset = baseOffset + dx;
-    const maxOffset = getCardOffset(0);
-    const minOffset = getCardOffset(runningApps.length - 1);
-    if (rawOffset > maxOffset) {
-      rawOffset = maxOffset + (rawOffset - maxOffset) * 0.3;
-    } else if (rawOffset < minOffset) {
-      rawOffset = minOffset + (rawOffset - minOffset) * 0.3;
-    }
-
-    recentsCards.style.transform = `translateX(${rawOffset}px)`;
-  };
-
-  const onUp = (e2) => {
-    recentsOverlay.removeEventListener('pointermove', onMove);
-    recentsOverlay.removeEventListener('pointerup', onUp);
-
-    const dx = e2.clientX - startX;
-    const cardCount = runningApps.length;
-
-    // Tap detection
-    if (Math.abs(dx) < 10) {
-      if (card) {
-        hideRecents();
-        openApp(card.dataset.color);
-        return;
-      }
-      if (dockIcon) {
-        hideRecents();
-        openApp(dockIcon.dataset.color);
-        return;
-      }
-      hideRecents();
-      return;
-    }
-
-    // Snap logic: dx wins when decisive, velocity only for small flicks
-    const threshold = 40;
-    let dir = 0;
-    if (Math.abs(dx) > threshold) {
-      // Decisive drag — use drag direction
-      dir = dx < 0 ? 1 : -1;
-    } else if (Math.abs(velocity) > 0.3) {
-      // Small drag but fast flick — use velocity
-      dir = velocity < 0 ? 1 : -1;
-    }
-    // dir: 1 = go to higher index (right/newer), -1 = go to lower index (left/older)
-    if (dir > 0) {
-      recentsCardIndex = Math.min(cardCount - 1, recentsCardIndex + 1);
-    } else if (dir < 0) {
-      recentsCardIndex = Math.max(0, recentsCardIndex - 1);
-    }
-
-    setCardsTransform(getCardOffset(recentsCardIndex), true);
-  };
-
-  recentsOverlay.addEventListener('pointermove', onMove);
-  recentsOverlay.addEventListener('pointerup', onUp);
+  }
 });
 
-// Init with some running apps (not from dock)
-runningApps = ['#E8A87C', '#85CDCA', '#C38D9E'];
-rebuildRecentsCards();
+buildRecentsPreview();
 </script>
 
 </body>
