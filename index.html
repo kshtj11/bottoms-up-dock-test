@@ -268,16 +268,29 @@ function buildRecentsPreview() {
     const card = document.createElement('div');
     card.className = 'preview-card';
     card.style.background = color;
+    card.dataset.color = color;
+    // Tapping a card (when recents are latched open) opens that app
+    card.addEventListener('pointerdown', (ev) => {
+      if (!recentsLatched) return;
+      ev.stopPropagation();
+      unlatchRecents();
+      openApp(color, true);
+    });
     recentsTrack.appendChild(card);
   });
 }
 
 const RECENT_INDEX = 2; // center cyan icon position in dockIcons
 
+const FRAME_H = 620;
+
 let dragging = false;
 let revealed = false;
+let recentsLatched = false; // recents view kept open after release
 let activeIndex = RECENT_INDEX;
 let startY = 0;
+let lastY = 0;
+let crossedMiddle = false;
 
 function setActive(index) {
   if (index === activeIndex) return;
@@ -309,7 +322,10 @@ deadzone.addEventListener('pointerdown', (e) => {
   e.preventDefault();
   dragging = true;
   revealed = false;
+  recentsLatched = false;
+  crossedMiddle = false;
   startY = e.clientY;
+  lastY = e.clientY;
 
   // Reset active to center (recent) by default
   dockIcons.forEach(ic => ic.classList.remove('active'));
@@ -321,6 +337,7 @@ deadzone.addEventListener('pointerdown', (e) => {
 
   const onMove = (e2) => {
     if (!dragging) return;
+    lastY = e2.clientY;
     const dy = startY - e2.clientY;
 
     if (dy > 8 && !revealed) {
@@ -328,6 +345,10 @@ deadzone.addEventListener('pointerdown', (e) => {
       dock.classList.add('revealed');
       recentsPreview.classList.add('visible');
     }
+
+    // Did the swipe reach past the middle of the screen?
+    const fr = frame.getBoundingClientRect();
+    if ((e2.clientY - fr.top) < FRAME_H / 2) crossedMiddle = true;
 
     if (revealed) {
       const idx = nearestIconIndex(e2.clientX);
@@ -340,17 +361,38 @@ deadzone.addEventListener('pointerdown', (e) => {
     frame.removeEventListener('pointerup', onUp);
     dragging = false;
 
-    if (revealed) {
+    const onRecentIcon = activeIndex === RECENT_INDEX;
+
+    if (revealed && (onRecentIcon || crossedMiddle)) {
+      // Keep the recent apps view open
+      latchRecents();
+    } else if (revealed) {
       openActive();
+      collapseDock();
+    } else {
+      collapseDock();
     }
-    // collapse dock
-    dock.classList.remove('revealed');
-    recentsPreview.classList.remove('visible');
   };
 
   frame.addEventListener('pointermove', onMove);
   frame.addEventListener('pointerup', onUp);
 });
+
+function collapseDock() {
+  dock.classList.remove('revealed');
+  if (!recentsLatched) recentsPreview.classList.remove('visible');
+}
+
+function latchRecents() {
+  recentsLatched = true;
+  dock.classList.remove('revealed');
+  recentsPreview.classList.add('visible');
+}
+
+function unlatchRecents() {
+  recentsLatched = false;
+  recentsPreview.classList.remove('visible');
+}
 
 function openActive() {
   const app = dockIcons[activeIndex].dataset.app;
@@ -382,6 +424,14 @@ appScreen.addEventListener('pointerdown', (e) => {
       appScreen.classList.remove('open');
     }
   }
+});
+
+// Tap anywhere outside the cards (while recents are latched) to dismiss
+frame.addEventListener('pointerdown', (e) => {
+  if (!recentsLatched || dragging) return;
+  if (e.target.closest('.preview-card')) return; // card handles its own tap
+  if (e.target.closest('#deadzone')) return;     // deadzone starts a new gesture
+  unlatchRecents();
 });
 
 buildRecentsPreview();
