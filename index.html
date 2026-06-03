@@ -68,6 +68,13 @@
     pointer-events: auto;
   }
 
+  #recents-empty {
+    color: rgba(255,255,255,0.4);
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    margin-bottom: 180px;
+  }
+
   #recents-cards {
     display: flex;
     align-items: center;
@@ -93,13 +100,7 @@
     box-shadow: 0 6px 28px rgba(0,0,0,0.4);
   }
 
-  .recent-card[data-color="#DADADA"] { background: #DADADA; }
-  .recent-card[data-color="#BEDE72"] { background: #BEDE72; }
-  .recent-card[data-color="#74FFEE"] { background: #74FFEE; }
-  .recent-card[data-color="#FFBBBC"] { background: #FFBBBC; }
-  .recent-card[data-color="#D4B2FF"] { background: #D4B2FF; }
-
-  /* Recents dock (persistent at bottom of recents view) */
+  /* Recents dock */
   #recents-dock {
     display: flex;
     flex-direction: column;
@@ -201,13 +202,6 @@
     transform: scale(1.4);
   }
 
-  #icon-search, .icon-search {
-    background: #DADADA;
-    background: color(display-p3 0.855 0.855 0.855);
-    position: relative;
-    overflow: visible;
-  }
-
   .search-svg {
     position: absolute;
     top: 50%;
@@ -248,26 +242,6 @@
     color: #FFFFFF;
     color: color(display-p3 1.000 1.000 1.000);
   }
-
-  .icon-green {
-    background: #BEDE72;
-    background: color(display-p3 0.769 0.867 0.498);
-  }
-
-  .icon-cyan {
-    background: #74FFEE;
-    background: color(display-p3 0.604 1.000 0.933);
-  }
-
-  .icon-pink {
-    background: #FFBBBC;
-    background: color(display-p3 1.000 0.745 0.745);
-  }
-
-  .icon-purple {
-    background: #D4B2FF;
-    background: color(display-p3 0.812 0.702 1.000);
-  }
 </style>
 </head>
 <body>
@@ -275,22 +249,18 @@
 <div id="frame">
   <!-- Home screen -->
   <div id="home-screen">
-    <!-- Row 1: top=88 -->
     <div class="home-icon" style="left:78px;top:88px"></div>
     <div class="home-icon" style="left:187px;top:88px"></div>
     <div class="home-icon" style="left:296px;top:88px"></div>
     <div class="home-icon" style="left:405px;top:88px"></div>
-    <!-- Row 2: top=193 -->
     <div class="home-icon" style="left:78px;top:193px"></div>
     <div class="home-icon" style="left:187px;top:193px"></div>
     <div class="home-icon" style="left:296px;top:193px"></div>
     <div class="home-icon" style="left:405px;top:193px"></div>
-    <!-- Row 3: top=294 -->
     <div class="home-icon" style="left:78px;top:294px"></div>
     <div class="home-icon" style="left:187px;top:294px"></div>
     <div class="home-icon" style="left:296px;top:294px"></div>
     <div class="home-icon" style="left:405px;top:294px"></div>
-    <!-- Row 4: top=399 -->
     <div class="home-icon" style="left:78px;top:399px"></div>
     <div class="home-icon" style="left:187px;top:399px"></div>
     <div class="home-icon" style="left:296px;top:399px"></div>
@@ -303,25 +273,20 @@
 
   <!-- Recents overlay -->
   <div id="recents-overlay">
-    <div id="recents-cards">
-      <div class="recent-card" data-color="#DADADA"></div>
-      <div class="recent-card" data-color="#BEDE72"></div>
-      <div class="recent-card" data-color="#74FFEE"></div>
-      <div class="recent-card" data-color="#FFBBBC"></div>
-      <div class="recent-card" data-color="#D4B2FF"></div>
-    </div>
+    <div id="recents-empty">No recent apps</div>
+    <div id="recents-cards"></div>
     <div id="recents-dock">
       <div id="recents-dock-icons">
-        <div class="app-icon icon-search" data-color="#DADADA">
+        <div class="app-icon" data-color="#DADADA" style="background:#DADADA">
           <svg class="search-svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
             <circle cx="9.5" cy="9.5" r="7" stroke="white" stroke-width="2" fill="none"/>
             <line x1="14.5" y1="14.5" x2="20" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </div>
-        <div class="app-icon icon-green" data-color="#BEDE72"></div>
-        <div class="app-icon icon-cyan" data-color="#74FFEE"></div>
-        <div class="app-icon icon-pink" data-color="#FFBBBC"></div>
-        <div class="app-icon icon-purple" data-color="#D4B2FF"></div>
+        <div class="app-icon" data-color="#FF9F43" style="background:#FF9F43"></div>
+        <div class="app-icon" data-color="#54A0FF" style="background:#54A0FF"></div>
+        <div class="app-icon" data-color="#FF6B6B" style="background:#FF6B6B"></div>
+        <div class="app-icon" data-color="#1DD1A1" style="background:#1DD1A1"></div>
       </div>
     </div>
   </div>
@@ -334,20 +299,20 @@
     </svg>
   </div>
 
-  <!-- Dock (swipe-up) -->
+  <!-- Dock (swipe-up quick access) -->
   <div id="dock-container">
     <div id="dock">
       <div id="dock-icons">
-        <div class="app-icon icon-search" id="icon-search" data-color="#DADADA">
+        <div class="app-icon" id="icon-search" data-color="#DADADA" style="background:#DADADA">
           <svg class="search-svg" width="22" height="22" viewBox="0 0 22 22" fill="none">
             <circle cx="9.5" cy="9.5" r="7" stroke="white" stroke-width="2" fill="none"/>
             <line x1="14.5" y1="14.5" x2="20" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </div>
-        <div class="app-icon icon-green" id="icon-green" data-color="#BEDE72"></div>
-        <div class="app-icon icon-cyan" id="icon-cyan" data-color="#74FFEE"></div>
-        <div class="app-icon icon-pink" id="icon-pink" data-color="#FFBBBC"></div>
-        <div class="app-icon icon-purple" id="icon-purple" data-color="#D4B2FF"></div>
+        <div class="app-icon" data-color="#FF9F43" style="background:#FF9F43"></div>
+        <div class="app-icon" data-color="#54A0FF" style="background:#54A0FF"></div>
+        <div class="app-icon" data-color="#FF6B6B" style="background:#FF6B6B"></div>
+        <div class="app-icon" data-color="#1DD1A1" style="background:#1DD1A1"></div>
       </div>
     </div>
   </div>
@@ -361,14 +326,39 @@ const appScreen = document.getElementById('app-screen');
 const appIcons = document.querySelectorAll('#dock-icons .app-icon');
 const recentsOverlay = document.getElementById('recents-overlay');
 const recentsCards = document.getElementById('recents-cards');
-const recentCardEls = document.querySelectorAll('.recent-card');
-const recentsDockIcons = document.querySelectorAll('#recents-dock-icons .app-icon');
+const recentsEmpty = document.getElementById('recents-empty');
 
 let state = 'idle'; // idle | dragging | recents | app-open
 let dragStartY = 0;
 let currentHovered = null;
-let peakDy = 0; // track highest point of drag
+let peakDy = 0;
 let recentsCardIndex = 0;
+
+// Running apps stack (most recent first)
+let runningApps = [];
+
+function addToRunning(color) {
+  // Remove if already exists (move to front)
+  runningApps = runningApps.filter(c => c !== color);
+  runningApps.unshift(color);
+  rebuildRecentsCards();
+}
+
+function rebuildRecentsCards() {
+  recentsCards.innerHTML = '';
+  if (runningApps.length === 0) {
+    recentsEmpty.style.display = '';
+    return;
+  }
+  recentsEmpty.style.display = 'none';
+  runningApps.forEach(color => {
+    const card = document.createElement('div');
+    card.className = 'recent-card';
+    card.dataset.color = color;
+    card.style.background = color;
+    recentsCards.appendChild(card);
+  });
+}
 
 // Handle drag
 dotIndicator.addEventListener('pointerdown', (e) => {
@@ -436,7 +426,6 @@ dotIndicator.addEventListener('pointerdown', (e) => {
     const dy = dragStartY - e2.clientY;
 
     if (currentHovered) {
-      // Released on a dock icon → open that app
       const color = currentHovered.dataset.color;
       recentsOverlay.classList.remove('visible');
       openApp(color);
@@ -444,16 +433,13 @@ dotIndicator.addEventListener('pointerdown', (e) => {
       currentHovered = null;
       hideDock();
     } else if (dy > 300) {
-      // Very high swipe → go home
       hideDock();
       goHome();
     } else if (recentsShown && dy > 60) {
-      // Recents already showing, stay in recents
       hideDock();
       dotIndicator.classList.remove('hidden');
       state = 'recents';
     } else {
-      // Dragged back down or barely moved → dismiss
       hideDock();
       recentsOverlay.classList.remove('visible');
       dotIndicator.classList.remove('hidden');
@@ -466,6 +452,7 @@ dotIndicator.addEventListener('pointerdown', (e) => {
 });
 
 function openApp(color) {
+  addToRunning(color);
   appScreen.style.background = color;
   appScreen.classList.add('open');
   dotIndicator.classList.remove('hidden');
@@ -485,13 +472,11 @@ function hideDock() {
 }
 
 function showRecents() {
-  state = 'recents';
   recentsCardIndex = 0;
-  updateRecentsPosition(true);
+  rebuildRecentsCards();
+  updateRecentsPosition(false);
   recentsOverlay.classList.add('visible');
   dotIndicator.classList.remove('hidden');
-
-  // Close any open app behind
   appScreen.classList.remove('open');
 }
 
@@ -509,13 +494,12 @@ function updateRecentsPosition(animate) {
   recentsCards.style.transform = `translateX(${offset}px)`;
 }
 
-// Horizontal swiping in recents view
+// Horizontal swiping + tapping in recents view
 let recentsDragStartX = 0;
 let recentsDragging = false;
 
 recentsOverlay.addEventListener('pointerdown', (e) => {
   if (state !== 'recents') return;
-  // Check if tapped on a card
   const card = e.target.closest('.recent-card');
   const dockIcon = e.target.closest('#recents-dock-icons .app-icon');
 
@@ -539,9 +523,9 @@ recentsOverlay.addEventListener('pointerdown', (e) => {
     recentsDragging = false;
 
     const dx = e2.clientX - recentsDragStartX;
+    const cardCount = runningApps.length;
 
     if (Math.abs(dx) < 10) {
-      // It was a tap
       if (card) {
         const color = card.dataset.color;
         hideRecents();
@@ -554,14 +538,12 @@ recentsOverlay.addEventListener('pointerdown', (e) => {
         openApp(color);
         return;
       }
-      // Tapped on background → dismiss recents
       hideRecents();
       return;
     }
 
-    // Swipe to change card
     const threshold = 80;
-    if (dx < -threshold && recentsCardIndex < recentCardEls.length - 1) {
+    if (dx < -threshold && recentsCardIndex < cardCount - 1) {
       recentsCardIndex++;
     } else if (dx > threshold && recentsCardIndex > 0) {
       recentsCardIndex--;
@@ -572,6 +554,9 @@ recentsOverlay.addEventListener('pointerdown', (e) => {
   recentsOverlay.addEventListener('pointermove', onMove);
   recentsOverlay.addEventListener('pointerup', onUp);
 });
+
+// Init
+rebuildRecentsCards();
 </script>
 
 </body>
