@@ -483,13 +483,14 @@ appScreen.addEventListener('pointerdown', (e) => {
 });
 
 // Horizontal swipe + tap on the latched recents carousel
-let rDragging = false, rStartX = 0, rBaseOffset = 0, rMoved = false;
+let rDragging = false, rStartX = 0, rBaseOffset = 0, rMoved = false, rStartTarget = null;
 
 recentsPreview.addEventListener('pointerdown', (e) => {
   if (!recentsLatched) return;
   rDragging = true;
   rMoved = false;
   rStartX = e.clientX;
+  rStartTarget = e.target; // captured here — pointer capture retargets later events
   rBaseOffset = offsetForIndex(recentsIndex);
   recentsPreview.setPointerCapture(e.pointerId);
 });
@@ -508,7 +509,7 @@ recentsPreview.addEventListener('pointerup', (e) => {
 
   if (!rMoved) {
     // It was a tap, not a swipe → open the tapped card's app
-    const card = e.target.closest('.preview-card');
+    const card = rStartTarget && rStartTarget.closest('.preview-card');
     if (card) {
       unlatchRecents();
       openApp(card.dataset.color);
