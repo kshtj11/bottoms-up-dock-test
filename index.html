@@ -78,8 +78,8 @@
   #recents-cards {
     display: flex;
     align-items: center;
+    align-self: flex-start;
     gap: 16px;
-    padding: 0 40px;
     margin-bottom: 20px;
     overflow: visible;
     will-change: transform;
@@ -325,6 +325,8 @@ const recentsEmpty = document.getElementById('recents-empty');
 
 const CARD_W = 280;
 const CARD_GAP = 16;
+const FRAME_W = 540;
+const CENTER_OFFSET = (FRAME_W - CARD_W) / 2; // 130px
 
 let state = 'idle';
 let dragStartY = 0;
@@ -367,7 +369,8 @@ function setCardsTransform(offset, animate) {
 }
 
 function getCardOffset(index) {
-  return -(index * (CARD_W + CARD_GAP));
+  // Center the card at `index` within the frame
+  return CENTER_OFFSET - (index * (CARD_W + CARD_GAP));
 }
 
 // Handle drag (swipe up from handle)
@@ -529,8 +532,8 @@ recentsOverlay.addEventListener('pointerdown', (e) => {
 
     // Rubber-band at edges
     let rawOffset = baseOffset + dx;
+    const maxOffset = getCardOffset(0);
     const minOffset = getCardOffset(runningApps.length - 1);
-    const maxOffset = 0;
     if (rawOffset > maxOffset) {
       rawOffset = maxOffset + (rawOffset - maxOffset) * 0.3;
     } else if (rawOffset < minOffset) {
