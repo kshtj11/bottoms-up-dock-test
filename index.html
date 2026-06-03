@@ -387,10 +387,24 @@ dotIndicator.addEventListener('pointerdown', (e) => {
 
   frame.setPointerCapture(e.pointerId);
 
+  let recentsShown = false;
+
   const onMove = (e2) => {
     if (state !== 'dragging') return;
     const dy = dragStartY - e2.clientY;
     if (dy > peakDy) peakDy = dy;
+
+    // Show recents as soon as threshold is crossed
+    if (dy > 25 && !recentsShown) {
+      recentsShown = true;
+      showRecents();
+    }
+
+    // Hide recents if dragged back down
+    if (recentsShown && dy < 15) {
+      recentsShown = false;
+      recentsOverlay.classList.remove('visible');
+    }
 
     // Hit-test dock icons
     const frameRect = frame.getBoundingClientRect();
@@ -424,26 +438,24 @@ dotIndicator.addEventListener('pointerdown', (e) => {
     if (currentHovered) {
       // Released on a dock icon → open that app
       const color = currentHovered.dataset.color;
+      recentsOverlay.classList.remove('visible');
       openApp(color);
       currentHovered.classList.remove('hovered');
       currentHovered = null;
       hideDock();
-    } else if (peakDy > 25 && dy < peakDy * 0.4) {
-      // Swiped up then came back down → dismiss
-      hideDock();
-      dotIndicator.classList.remove('hidden');
-      state = wasAppOpen ? 'app-open' : 'idle';
     } else if (dy > 300) {
       // Very high swipe → go home
       hideDock();
       goHome();
-    } else if (dy > 25) {
-      // Released up without hitting icon → show recents
+    } else if (recentsShown && dy > 15) {
+      // Recents already showing, stay in recents
       hideDock();
-      showRecents();
+      dotIndicator.classList.remove('hidden');
+      state = 'recents';
     } else {
-      // Barely moved → dismiss
+      // Dragged back down or barely moved → dismiss
       hideDock();
+      recentsOverlay.classList.remove('visible');
       dotIndicator.classList.remove('hidden');
       state = wasAppOpen ? 'app-open' : 'idle';
     }
