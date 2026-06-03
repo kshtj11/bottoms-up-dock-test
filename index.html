@@ -82,7 +82,7 @@
     padding: 0 40px;
     margin-bottom: 20px;
     overflow: visible;
-    transition: transform 0.3s ease;
+    will-change: transform;
   }
 
   .recent-card {
@@ -91,13 +91,8 @@
     border-radius: 16px;
     flex: none;
     cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  }
-
-  .recent-card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 6px 28px rgba(0,0,0,0.4);
+    will-change: transform;
   }
 
   /* Recents dock */
@@ -328,19 +323,21 @@ const recentsOverlay = document.getElementById('recents-overlay');
 const recentsCards = document.getElementById('recents-cards');
 const recentsEmpty = document.getElementById('recents-empty');
 
-let state = 'idle'; // idle | dragging | recents | app-open
+const CARD_W = 280;
+const CARD_GAP = 16;
+
+let state = 'idle';
 let dragStartY = 0;
 let currentHovered = null;
 let peakDy = 0;
 let recentsCardIndex = 0;
 
-// Running apps stack (most recent first)
+// Running apps stack — oldest first, newest last (rightmost)
 let runningApps = [];
 
 function addToRunning(color) {
-  // Remove if already exists (move to front)
   runningApps = runningApps.filter(c => c !== color);
-  runningApps.unshift(color);
+  runningApps.push(color); // newest goes to end (right)
   rebuildRecentsCards();
 }
 
@@ -360,7 +357,20 @@ function rebuildRecentsCards() {
   });
 }
 
-// Handle drag
+function setCardsTransform(offset, animate) {
+  if (animate) {
+    recentsCards.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+  } else {
+    recentsCards.style.transition = 'none';
+  }
+  recentsCards.style.transform = `translateX(${offset}px)`;
+}
+
+function getCardOffset(index) {
+  return -(index * (CARD_W + CARD_GAP));
+}
+
+// Handle drag (swipe up from handle)
 dotIndicator.addEventListener('pointerdown', (e) => {
   if (state !== 'idle' && state !== 'app-open') return;
   e.preventDefault();
@@ -384,19 +394,16 @@ dotIndicator.addEventListener('pointerdown', (e) => {
     const dy = dragStartY - e2.clientY;
     if (dy > peakDy) peakDy = dy;
 
-    // Show recents as soon as threshold is crossed
     if (dy > 100 && !recentsShown) {
       recentsShown = true;
       showRecents();
     }
 
-    // Hide recents if dragged back down
     if (recentsShown && dy < 60) {
       recentsShown = false;
       recentsOverlay.classList.remove('visible');
     }
 
-    // Hit-test dock icons
     const frameRect = frame.getBoundingClientRect();
     const pointerX = e2.clientX - frameRect.left;
     const pointerY = e2.clientY - frameRect.top;
@@ -472,9 +479,10 @@ function hideDock() {
 }
 
 function showRecents() {
-  recentsCardIndex = 0;
   rebuildRecentsCards();
-  updateRecentsPosition(false);
+  // Start at the rightmost card (most recent)
+  recentsCardIndex = Math.max(0, runningApps.length - 1);
+  setCardsTransform(getCardOffset(recentsCardIndex), false);
   recentsOverlay.classList.add('visible');
   dotIndicator.classList.remove('hidden');
   appScreen.classList.remove('open');
@@ -486,69 +494,79 @@ function hideRecents() {
   state = 'idle';
 }
 
-function updateRecentsPosition(animate) {
-  const cardW = 280;
-  const gap = 16;
-  const offset = -(recentsCardIndex * (cardW + gap));
-  recentsCards.style.transition = animate ? 'transform 0.3s ease' : 'none';
-  recentsCards.style.transform = `translateX(${offset}px)`;
-}
-
-// Horizontal swiping + tapping in recents view
-let recentsDragStartX = 0;
-let recentsDragging = false;
-
+// Smooth recents swiping with momentum
 recentsOverlay.addEventListener('pointerdown', (e) => {
   if (state !== 'recents') return;
+  e.preventDefault();
+
   const card = e.target.closest('.recent-card');
   const dockIcon = e.target.closest('#recents-dock-icons .app-icon');
 
-  recentsDragStartX = e.clientX;
-  recentsDragging = true;
+  let startX = e.clientX;
+  let lastX = startX;
+  let lastTime = Date.now();
+  let velocity = 0;
+
+  recentsCards.style.transition = 'none';
   recentsOverlay.setPointerCapture(e.pointerId);
 
+  const baseOffset = getCardOffset(recentsCardIndex);
+
   const onMove = (e2) => {
-    if (!recentsDragging) return;
-    const dx = e2.clientX - recentsDragStartX;
-    const cardW = 280;
-    const gap = 16;
-    const baseOffset = -(recentsCardIndex * (cardW + gap));
-    recentsCards.style.transition = 'none';
-    recentsCards.style.transform = `translateX(${baseOffset + dx}px)`;
+    const now = Date.now();
+    const dx = e2.clientX - startX;
+    const dt = now - lastTime;
+    if (dt > 0) {
+      velocity = (e2.clientX - lastX) / dt;
+    }
+    lastX = e2.clientX;
+    lastTime = now;
+
+    // Rubber-band at edges
+    let rawOffset = baseOffset + dx;
+    const minOffset = getCardOffset(runningApps.length - 1);
+    const maxOffset = 0;
+    if (rawOffset > maxOffset) {
+      rawOffset = maxOffset + (rawOffset - maxOffset) * 0.3;
+    } else if (rawOffset < minOffset) {
+      rawOffset = minOffset + (rawOffset - minOffset) * 0.3;
+    }
+
+    recentsCards.style.transform = `translateX(${rawOffset}px)`;
   };
 
   const onUp = (e2) => {
     recentsOverlay.removeEventListener('pointermove', onMove);
     recentsOverlay.removeEventListener('pointerup', onUp);
-    recentsDragging = false;
 
-    const dx = e2.clientX - recentsDragStartX;
+    const dx = e2.clientX - startX;
     const cardCount = runningApps.length;
 
+    // Tap detection
     if (Math.abs(dx) < 10) {
       if (card) {
-        const color = card.dataset.color;
         hideRecents();
-        openApp(color);
+        openApp(card.dataset.color);
         return;
       }
       if (dockIcon) {
-        const color = dockIcon.dataset.color;
         hideRecents();
-        openApp(color);
+        openApp(dockIcon.dataset.color);
         return;
       }
       hideRecents();
       return;
     }
 
-    const threshold = 80;
-    if (dx < -threshold && recentsCardIndex < cardCount - 1) {
-      recentsCardIndex++;
-    } else if (dx > threshold && recentsCardIndex > 0) {
-      recentsCardIndex--;
+    // Momentum: use velocity to decide direction
+    const threshold = 40;
+    if (dx < -threshold || velocity < -0.3) {
+      recentsCardIndex = Math.min(cardCount - 1, recentsCardIndex + 1);
+    } else if (dx > threshold || velocity > 0.3) {
+      recentsCardIndex = Math.max(0, recentsCardIndex - 1);
     }
-    updateRecentsPosition(true);
+
+    setCardsTransform(getCardOffset(recentsCardIndex), true);
   };
 
   recentsOverlay.addEventListener('pointermove', onMove);
