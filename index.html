@@ -253,6 +253,8 @@ const APP_COLORS = {
 
 // Recent apps stack — index 0 is most recent (shown in middle of preview)
 let recents = ['#E8A87C', '#85CDCA', '#C38D9E'];
+// Color of the app currently in the foreground (null when on home)
+let currentApp = null;
 
 const CARD_W = 324, CARD_GAP = 44, CARD_STEP = CARD_W + CARD_GAP; // 368
 let recentsCards = [];   // colors laid out left->right (oldest -> newest)
@@ -260,7 +262,8 @@ let recentsIndex = 0;    // index of the currently centered card
 
 function buildRecentsPreview() {
   recentsTrack.innerHTML = '';
-  recentsCards = recents.slice().reverse(); // rightmost = most recent
+  // Exclude the app you're currently in — don't show it in its own recents
+  recentsCards = recents.filter(c => c !== currentApp).reverse(); // rightmost = most recent
   recentsCards.forEach((color) => {
     const card = document.createElement('div');
     card.className = 'preview-card';
@@ -401,20 +404,15 @@ function unlatchRecents() {
 
 function openActive() {
   const app = dockIcons[activeIndex].dataset.app;
-  let color;
-  if (app === 'recent') {
-    color = recents[0]; // most recent
-  } else {
-    color = APP_COLORS[app];
-  }
-  openApp(color, app !== 'recent');
+  if (app === 'recent') return; // handled by latchRecents
+  openApp(APP_COLORS[app]);
 }
 
-function openApp(color, addToRecents) {
-  if (addToRecents) {
-    recents = recents.filter(c => c !== color);
-    recents.unshift(color);
-  }
+function openApp(color) {
+  currentApp = color;
+  // Move to the front of the recents stack (most recent)
+  recents = recents.filter(c => c !== color);
+  recents.unshift(color);
   appScreen.style.background = color;
   appScreen.classList.add('open');
 }
@@ -427,6 +425,7 @@ appScreen.addEventListener('pointerdown', (e) => {
     const yInFrame = e.clientY - r.top;
     if (yInFrame < 604) { // above deadzone
       appScreen.classList.remove('open');
+      currentApp = null;
     }
   }
 });
@@ -460,7 +459,7 @@ recentsPreview.addEventListener('pointerup', (e) => {
     const card = e.target.closest('.preview-card');
     if (card) {
       unlatchRecents();
-      openApp(card.dataset.color, true);
+      openApp(card.dataset.color);
     }
     return;
   }
