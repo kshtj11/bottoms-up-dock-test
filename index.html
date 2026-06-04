@@ -93,6 +93,7 @@
     display: flex;
     gap: 44px;
     align-items: center;
+    will-change: transform;
   }
   .preview-card {
     width: 324px;
@@ -120,6 +121,7 @@
     z-index: 20;
     opacity: 0;
     pointer-events: none;
+    will-change: transform, opacity;
     transition: transform 0.28s cubic-bezier(0.22,1,0.36,1), opacity 0.2s ease;
   }
   #dock.revealed {
@@ -201,24 +203,8 @@
 <body>
 
 <div id="frame">
-  <!-- Home screen -->
+  <!-- Home screen (icons generated in JS) -->
   <div id="home-screen">
-    <div class="home-icon" style="left:78px;top:88px"></div>
-    <div class="home-icon" style="left:187px;top:88px"></div>
-    <div class="home-icon" style="left:296px;top:88px"></div>
-    <div class="home-icon" style="left:405px;top:88px"></div>
-    <div class="home-icon" style="left:78px;top:193px"></div>
-    <div class="home-icon" style="left:187px;top:193px"></div>
-    <div class="home-icon" style="left:296px;top:193px"></div>
-    <div class="home-icon" style="left:405px;top:193px"></div>
-    <div class="home-icon" style="left:78px;top:294px"></div>
-    <div class="home-icon" style="left:187px;top:294px"></div>
-    <div class="home-icon" style="left:296px;top:294px"></div>
-    <div class="home-icon" style="left:405px;top:294px"></div>
-    <div class="home-icon" style="left:78px;top:399px"></div>
-    <div class="home-icon" style="left:187px;top:399px"></div>
-    <div class="home-icon" style="left:296px;top:399px"></div>
-    <div class="home-icon" style="left:405px;top:399px"></div>
     <div id="home-label">home screen with something and all</div>
   </div>
 
@@ -254,13 +240,29 @@
 
 <script>
 const frame = document.getElementById('frame');
-const deadzone = document.getElementById('deadzone');
 const swipeZone = document.getElementById('swipe-zone');
 const dock = document.getElementById('dock');
 const dockIcons = Array.from(document.querySelectorAll('.dock-icon'));
 const appScreen = document.getElementById('app-screen');
 const recentsPreview = document.getElementById('recents-preview');
 const recentsTrack = document.getElementById('recents-track');
+
+// Build the 4×4 home-icon grid (cols at x, rows at y)
+(() => {
+  const homeScreen = document.getElementById('home-screen');
+  const label = document.getElementById('home-label');
+  const frag = document.createDocumentFragment();
+  for (const top of [88, 193, 294, 399]) {
+    for (const left of [78, 187, 296, 405]) {
+      const icon = document.createElement('div');
+      icon.className = 'home-icon';
+      icon.style.left = left + 'px';
+      icon.style.top = top + 'px';
+      frag.appendChild(icon);
+    }
+  }
+  homeScreen.insertBefore(frag, label);
+})();
 
 // App color map for full-screen open
 const APP_COLORS = {
@@ -309,7 +311,9 @@ function setRecentsOffset(px, animate) {
 const RECENT_INDEX = 2; // center cyan icon position in dockIcons
 
 const FRAME_H = 620;
+const DEADZONE_H = 16;
 
+let gestureFrameRect = null; // frame rect cached for the duration of a drag
 let dragging = false;
 let revealed = false;
 let recentsLatched = false; // recents view kept open after release
@@ -358,6 +362,7 @@ swipeZone.addEventListener('pointerdown', (e) => {
   prevY = e.clientY;
   prevT = performance.now();
   velocity = 0;
+  gestureFrameRect = frame.getBoundingClientRect(); // frame doesn't move mid-drag
 
   // Reset active to center (recent) by default
   dockIcons.forEach(ic => ic.classList.remove('active'));
@@ -389,8 +394,7 @@ swipeZone.addEventListener('pointerdown', (e) => {
     }
 
     // Did the swipe reach past the middle of the screen?
-    const fr = frame.getBoundingClientRect();
-    if ((e2.clientY - fr.top) < FRAME_H / 2) crossedMiddle = true;
+    if ((e2.clientY - gestureFrameRect.top) < FRAME_H / 2) crossedMiddle = true;
 
     if (revealed) {
       const idx = nearestIconIndex(e2.clientX);
@@ -469,16 +473,12 @@ function openApp(color) {
   appScreen.classList.add('open');
 }
 
-// Tap on opened app to go home
+// Tap on opened app to go home (ignore taps in the bottom deadzone)
 appScreen.addEventListener('pointerdown', (e) => {
-  // only dismiss if tap is not in the deadzone region (handled separately)
-  if (e.clientY) {
-    const r = frame.getBoundingClientRect();
-    const yInFrame = e.clientY - r.top;
-    if (yInFrame < 604) { // above deadzone
-      appScreen.classList.remove('open');
-      currentApp = null;
-    }
+  const yInFrame = e.clientY - frame.getBoundingClientRect().top;
+  if (yInFrame < FRAME_H - DEADZONE_H) {
+    appScreen.classList.remove('open');
+    currentApp = null;
   }
 });
 
