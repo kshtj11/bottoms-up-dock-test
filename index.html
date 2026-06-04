@@ -552,6 +552,18 @@ frame.addEventListener('pointerdown', (e) => {
   unlatchRecents();
 });
 
+// While the recents view is latched, tapping a dock icon launches that app
+dockIcons.forEach((icon) => {
+  icon.addEventListener('pointerdown', (e) => {
+    if (!recentsLatched) return;
+    const app = icon.dataset.app;
+    if (app === 'recent') return; // already on recents — nothing to do
+    e.stopPropagation();
+    unlatchRecents();
+    openApp(APP_COLORS[app]);
+  });
+});
+
 // Top-right toggle for dock background fill
 const dockFillToggle = document.getElementById('dock-fill-toggle');
 dockFillToggle.addEventListener('pointerdown', (e) => {
