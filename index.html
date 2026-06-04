@@ -357,7 +357,8 @@ let lastY = 0;
 let crossedMiddle = false;
 // Velocity tracking for quick-flick-to-home
 let prevY = 0, prevT = 0, velocity = 0;
-const FLICK_VELOCITY = 0.9; // px/ms upward = quick flick → home
+const FLICK_VELOCITY = 0.9;   // px/ms upward = quick flick → home
+const LATCH_TRAVEL_PX = 120;  // upward travel that latches recents on release
 
 function setActive(index) {
   if (index === activeIndex) return;
@@ -427,8 +428,8 @@ swipeZone.addEventListener('pointerdown', (e) => {
       showRecentsView();
     }
 
-    // Did the swipe reach past the middle of the screen?
-    if ((e2.clientY - gestureFrameRect.top) < FRAME_H / 2) crossedMiddle = true;
+    // Did the swipe travel far enough that release should latch recents?
+    if ((startY - e2.clientY) > LATCH_TRAVEL_PX) crossedMiddle = true;
 
     if (revealed) {
       const idx = nearestIconIndex(e2.clientX);
