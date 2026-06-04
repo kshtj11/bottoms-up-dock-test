@@ -155,6 +155,7 @@
   .dock-svg {
     width: 36px;
     height: 36px;
+    object-fit: contain;
     transition: transform 0.18s ease;
     pointer-events: none;
   }
@@ -240,23 +241,14 @@
         </svg>
       </div>
       <div class="dock-icon" data-app="green">
-        <svg class="dock-svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-5 4V6a1 1 0 0 1 1-1z"/>
-        </svg>
+        <img class="dock-svg" src="icons/notes-app-icon.png" alt="">
       </div>
       <div class="dock-icon active" data-app="recent"></div>
       <div class="dock-icon" data-app="pink">
-        <svg class="dock-svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
-          <circle cx="12" cy="13" r="4"/>
-        </svg>
+        <img class="dock-svg" src="icons/camera-app-icon.png" alt="">
       </div>
       <div class="dock-icon" data-app="purple">
-        <svg class="dock-svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 18V5l11-2v13"/>
-          <circle cx="6" cy="18" r="3"/>
-          <circle cx="17" cy="16" r="3"/>
-        </svg>
+        <img class="dock-svg" src="icons/music-app-icon.png" alt="">
       </div>
     </div>
   </div>
