@@ -315,7 +315,7 @@ const CARD_W = 324, CARD_GAP = 44, CARD_STEP = CARD_W + CARD_GAP; // 368
 let recentsCards = [];   // colors laid out left->right (oldest -> newest)
 let recentsIndex = 0;    // index of the currently centered card
 
-function buildRecentsPreview() {
+function buildRecentsPreview(animate = false) {
   recentsTrack.innerHTML = '';
   // Exclude the app you're currently in — don't show it in its own recents
   recentsCards = recents.filter(c => c !== currentApp).reverse(); // rightmost = most recent
@@ -326,8 +326,8 @@ function buildRecentsPreview() {
     card.dataset.appKey = key;
     recentsTrack.appendChild(card);
   });
-  recentsIndex = recentsCards.length - 1; // start on most recent (centered)
-  setRecentsOffset(offsetForIndex(recentsIndex), false);
+  recentsIndex = Math.max(0, recentsCards.length - 1); // start on most recent (centered)
+  setRecentsOffset(offsetForIndex(recentsIndex), animate);
 }
 
 function offsetForIndex(i) {
@@ -507,17 +507,28 @@ function openApp(key) {
   appScreen.classList.add('open');
 }
 
-// Horizontal swipe + tap on the latched recents carousel (with fling momentum)
-const FLING_MOMENTUM_MS = 320; // how far the finger's last velocity carries
-let rDragging = false, rStartX = 0, rBaseOffset = 0, rMoved = false, rStartTarget = null;
+// Recents carousel interactions:
+//   • horizontal swipe → page (with fling momentum)
+//   • tap a card        → open that app
+//   • swipe a card UP   → close it (remove from recents)
+//   • swipe a card DOWN → open that app
+// Mode is locked from the first ~10px of motion.
+const FLING_MOMENTUM_MS = 320;     // how far the finger's last velocity carries
+const VERT_OPEN_PX  = 80;          // swipe-down distance to open
+const VERT_CLOSE_PX = 80;          // swipe-up distance to close
+const MODE_LOCK_PX  = 10;          // movement before we commit to horiz/vert
+let rDragging = false, rStartX = 0, rStartY = 0, rBaseOffset = 0;
+let rStartTarget = null, rCard = null, rMode = null; // null | 'horiz' | 'vert'
 let rPrevX = 0, rPrevT = 0, rVel = 0;
 
 recentsPreview.addEventListener('pointerdown', (e) => {
   if (!recentsLatched) return;
   rDragging = true;
-  rMoved = false;
+  rMode = null;
   rStartX = e.clientX;
+  rStartY = e.clientY;
   rStartTarget = e.target; // captured here — pointer capture retargets later events
+  rCard = e.target.closest('.preview-card');
   rBaseOffset = offsetForIndex(recentsIndex);
   rPrevX = e.clientX;
   rPrevT = performance.now();
@@ -528,25 +539,39 @@ recentsPreview.addEventListener('pointerdown', (e) => {
 recentsPreview.addEventListener('pointermove', (e) => {
   if (!rDragging) return;
   const dx = e.clientX - rStartX;
-  if (Math.abs(dx) > 8) rMoved = true;
-  // Track instantaneous horizontal velocity (px/ms)
-  const now = performance.now();
-  const dt = now - rPrevT;
-  if (dt > 0) {
-    rVel = (e.clientX - rPrevX) / dt;
-    rPrevT = now;
-    rPrevX = e.clientX;
+  const dy = e.clientY - rStartY;
+
+  // Lock the gesture mode on first decisive motion
+  if (!rMode && (Math.abs(dx) > MODE_LOCK_PX || Math.abs(dy) > MODE_LOCK_PX)) {
+    // Vertical only counts if the user pressed on a real card
+    rMode = (Math.abs(dy) > Math.abs(dx) && rCard) ? 'vert' : 'horiz';
   }
-  setRecentsOffset(rBaseOffset + dx, false);
+
+  if (rMode === 'horiz') {
+    // Track instantaneous horizontal velocity (px/ms)
+    const now = performance.now();
+    const dt = now - rPrevT;
+    if (dt > 0) {
+      rVel = (e.clientX - rPrevX) / dt;
+      rPrevT = now;
+      rPrevX = e.clientX;
+    }
+    setRecentsOffset(rBaseOffset + dx, false);
+  } else if (rMode === 'vert' && rCard) {
+    // Drag the single card vertically, fading slightly as it travels
+    rCard.style.transform = `translateY(${dy}px)`;
+    rCard.style.opacity = String(Math.max(0.4, 1 - Math.abs(dy) / 400));
+  }
 });
 
 recentsPreview.addEventListener('pointerup', (e) => {
   if (!rDragging) return;
   rDragging = false;
   const dx = e.clientX - rStartX;
+  const dy = e.clientY - rStartY;
 
-  if (!rMoved) {
-    // It was a tap, not a swipe → open the tapped card's app
+  // No mode locked → it was a tap
+  if (!rMode) {
     const card = rStartTarget && rStartTarget.closest('.preview-card');
     if (card) {
       unlatchRecents();
@@ -555,16 +580,46 @@ recentsPreview.addEventListener('pointerup', (e) => {
     return;
   }
 
-  // Project finger displacement + a window of the last velocity (fling).
-  // Ignore stale velocity if the finger paused before releasing.
-  const sinceLast = performance.now() - rPrevT;
-  const v = sinceLast > 80 ? 0 : rVel;
-  const projected = dx + v * FLING_MOMENTUM_MS;
-  let delta = Math.round(-projected / CARD_STEP);
-  // Tiny slow drag past ~22% still advances one card
-  if (delta === 0 && Math.abs(dx) > CARD_STEP * 0.22) delta = dx < 0 ? 1 : -1;
-  recentsIndex = Math.max(0, Math.min(recentsCards.length - 1, recentsIndex + delta));
-  setRecentsOffset(offsetForIndex(recentsIndex), true);
+  if (rMode === 'horiz') {
+    // Project finger displacement + a window of the last velocity (fling).
+    // Ignore stale velocity if the finger paused before releasing.
+    const sinceLast = performance.now() - rPrevT;
+    const v = sinceLast > 80 ? 0 : rVel;
+    const projected = dx + v * FLING_MOMENTUM_MS;
+    let delta = Math.round(-projected / CARD_STEP);
+    if (delta === 0 && Math.abs(dx) > CARD_STEP * 0.22) delta = dx < 0 ? 1 : -1;
+    recentsIndex = Math.max(0, Math.min(recentsCards.length - 1, recentsIndex + delta));
+    setRecentsOffset(offsetForIndex(recentsIndex), true);
+    return;
+  }
+
+  // rMode === 'vert'
+  if (!rCard) return;
+  const key = rCard.dataset.appKey;
+
+  if (dy > VERT_OPEN_PX) {
+    // Swipe DOWN → open
+    rCard.style.transform = '';
+    rCard.style.opacity = '';
+    unlatchRecents();
+    openApp(key);
+  } else if (dy < -VERT_CLOSE_PX) {
+    // Swipe UP → close: animate the card off-screen, then rebuild recents
+    rCard.style.transition = 'transform 0.22s ease, opacity 0.22s ease';
+    rCard.style.transform = 'translateY(-460px)';
+    rCard.style.opacity = '0';
+    setTimeout(() => {
+      recents = recents.filter(c => c !== key);
+      if (key === currentApp) currentApp = null;
+      buildRecentsPreview(true);
+    }, 220);
+  } else {
+    // Not far enough → snap back
+    rCard.style.transition = 'transform 0.18s ease, opacity 0.18s ease';
+    rCard.style.transform = '';
+    rCard.style.opacity = '';
+    setTimeout(() => { if (rCard) rCard.style.transition = ''; }, 180);
+  }
 });
 
 // Tap outside the carousel/dock (while latched) to dismiss to home
