@@ -94,7 +94,7 @@
   .preview-card {
     width: 324px;
     height: 372px;
-    border-radius: 22px;
+    border-radius: 4px;
     flex: none;
     box-shadow: 0 8px 30px rgba(0,0,0,0.35);
   }
@@ -151,15 +151,10 @@
     height: 64px;
   }
 
-  .icon-search { background: #DADADA; background: color(display-p3 0.855 0.855 0.855); }
-  .icon-green  { background: #BEDE72; background: color(display-p3 0.769 0.867 0.498); }
-  .icon-cyan   { background: #74FFEE; background: color(display-p3 0.604 1.000 0.933); }
-  .icon-pink   { background: #FFBBBC; background: color(display-p3 1.000 0.745 0.745); }
-  .icon-purple { background: #D4B2FF; background: color(display-p3 0.812 0.702 1.000); }
-
+  /* Dock icons are bare glyphs — no circle frame */
   .search-svg {
-    width: 22px;
-    height: 22px;
+    width: 36px;
+    height: 36px;
     transition: transform 0.18s ease;
   }
   .dock-icon.active .search-svg,
@@ -167,7 +162,7 @@
     transform: scale(1.3);
   }
   .glyph {
-    font-size: 22px;
+    font-size: 36px;
     line-height: 1;
     transition: transform 0.18s ease;
     /* keep emoji centred & not selectable */
