@@ -502,15 +502,6 @@ function openApp(key) {
   appScreen.classList.add('open');
 }
 
-// Tap on opened app to go home (ignore taps in the bottom deadzone)
-appScreen.addEventListener('pointerdown', (e) => {
-  const yInFrame = e.clientY - frame.getBoundingClientRect().top;
-  if (yInFrame < FRAME_H - DEADZONE_H) {
-    appScreen.classList.remove('open');
-    currentApp = null;
-  }
-});
-
 // Horizontal swipe + tap on the latched recents carousel
 let rDragging = false, rStartX = 0, rBaseOffset = 0, rMoved = false, rStartTarget = null;
 
