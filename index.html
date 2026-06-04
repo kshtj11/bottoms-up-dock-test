@@ -162,8 +162,17 @@
     height: 22px;
     transition: transform 0.18s ease;
   }
-  .dock-icon.active .search-svg {
+  .dock-icon.active .search-svg,
+  .dock-icon.active .glyph {
     transform: scale(1.3);
+  }
+  .glyph {
+    font-size: 22px;
+    line-height: 1;
+    transition: transform 0.18s ease;
+    /* keep emoji centred & not selectable */
+    pointer-events: none;
+    user-select: none;
   }
 
   /* Deadzone (Rectangle 37) — full-width black bar, visual only */
@@ -222,10 +231,10 @@
           <line x1="14.5" y1="14.5" x2="20" y2="20" stroke="white" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </div>
-      <div class="dock-icon icon-green" data-app="green"></div>
+      <div class="dock-icon icon-green" data-app="green"><span class="glyph">💬</span></div>
       <div class="dock-icon icon-cyan active" data-app="recent"></div>
-      <div class="dock-icon icon-pink" data-app="pink"></div>
-      <div class="dock-icon icon-purple" data-app="purple"></div>
+      <div class="dock-icon icon-pink" data-app="pink"><span class="glyph">📷</span></div>
+      <div class="dock-icon icon-purple" data-app="purple"><span class="glyph">🎵</span></div>
     </div>
   </div>
 
@@ -263,10 +272,20 @@ const APP_COLORS = {
   purple: '#D4B2FF'
 };
 
-// Recent apps stack — index 0 is most recent (shown in middle of preview)
-let recents = ['#E8A87C', '#85CDCA', '#C38D9E'];
-// Color of the app currently in the foreground (null when on home)
+// Recent apps stack — index 0 is most recent (shown in middle of preview).
+// Entries are opaque "app keys": either an image path (image-backed app)
+// or a hex color (dock-launched app).
+let recents = ['recents/1.png', 'recents/2.png', 'recents/3.png'];
+// Key of the app currently in the foreground (null when on home)
 let currentApp = null;
+
+// Build a CSS background value for an app key (image or hex color)
+function appBg(key) {
+  if (typeof key === 'string' && key.endsWith('.png')) {
+    return `#000 url('${key}') center / cover no-repeat`;
+  }
+  return key;
+}
 
 const CARD_W = 324, CARD_GAP = 44, CARD_STEP = CARD_W + CARD_GAP; // 368
 let recentsCards = [];   // colors laid out left->right (oldest -> newest)
@@ -276,11 +295,11 @@ function buildRecentsPreview() {
   recentsTrack.innerHTML = '';
   // Exclude the app you're currently in — don't show it in its own recents
   recentsCards = recents.filter(c => c !== currentApp).reverse(); // rightmost = most recent
-  recentsCards.forEach((color) => {
+  recentsCards.forEach((key) => {
     const card = document.createElement('div');
     card.className = 'preview-card';
-    card.style.background = color;
-    card.dataset.color = color;
+    card.style.background = appBg(key);
+    card.dataset.appKey = key;
     recentsTrack.appendChild(card);
   });
   recentsIndex = recentsCards.length - 1; // start on most recent (centered)
@@ -455,12 +474,12 @@ function openActive() {
   openApp(APP_COLORS[app]);
 }
 
-function openApp(color) {
-  currentApp = color;
+function openApp(key) {
+  currentApp = key;
   // Move to the front of the recents stack (most recent)
-  recents = recents.filter(c => c !== color);
-  recents.unshift(color);
-  appScreen.style.background = color;
+  recents = recents.filter(c => c !== key);
+  recents.unshift(key);
+  appScreen.style.background = appBg(key);
   appScreen.classList.add('open');
 }
 
@@ -503,7 +522,7 @@ recentsPreview.addEventListener('pointerup', (e) => {
     const card = rStartTarget && rStartTarget.closest('.preview-card');
     if (card) {
       unlatchRecents();
-      openApp(card.dataset.color);
+      openApp(card.dataset.appKey);
     }
     return;
   }
