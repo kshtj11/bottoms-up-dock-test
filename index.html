@@ -183,6 +183,27 @@
     z-index: 30;
   }
 
+  /* Dock-fill toggle (top-right) */
+  #dock-fill-toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 40;
+    padding: 4px 8px;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: #fff;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+  #frame.dock-bare #dock {
+    background: transparent;
+  }
+
   /* Active swipe-up zone — only the central 72px starts a gesture */
   #swipe-zone {
     position: absolute;
@@ -232,6 +253,9 @@
       <div class="dock-icon icon-purple" data-app="purple"><span class="glyph">🎵</span></div>
     </div>
   </div>
+
+  <!-- Dock-fill visibility toggle -->
+  <div id="dock-fill-toggle">Dock BG: ON</div>
 
   <!-- Deadzone -->
   <div id="deadzone"></div>
@@ -536,6 +560,14 @@ frame.addEventListener('pointerdown', (e) => {
   if (e.target.closest('#dock')) return;            // dock is persistent
   if (e.target.closest('#deadzone')) return;         // deadzone starts a new gesture
   unlatchRecents();
+});
+
+// Top-right toggle for dock background fill
+const dockFillToggle = document.getElementById('dock-fill-toggle');
+dockFillToggle.addEventListener('pointerdown', (e) => {
+  e.stopPropagation(); // don't trigger frame-level dismiss/hit handlers
+  const on = frame.classList.toggle('dock-bare');
+  dockFillToggle.textContent = on ? 'Dock BG: OFF' : 'Dock BG: ON';
 });
 
 buildRecentsPreview();
