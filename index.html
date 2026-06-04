@@ -173,15 +173,15 @@
     height: 16px;
     background: #111111;
     background: color(display-p3 0.067 0.067 0.067);
-    opacity: 0.05;
+    opacity: 0;
+    transition: opacity 0.2s ease;
     z-index: 30;
   }
 
-  /* Dock-fill toggle (top-right) */
-  #dock-fill-toggle {
+  /* Corner toggle pills */
+  .corner-toggle {
     position: absolute;
     top: 8px;
-    right: 8px;
     z-index: 40;
     padding: 4px 8px;
     font-family: 'Inter', sans-serif;
@@ -194,9 +194,12 @@
     cursor: pointer;
     user-select: none;
   }
-  #frame.dock-bare #dock {
-    background: transparent;
-  }
+  #dock-fill-toggle { right: 8px; }
+  #edge-toggle      { left: 8px; }
+
+  #frame.dock-bare #dock { background: transparent; }
+  #frame.show-edges #deadzone,
+  #frame.show-edges #swipe-zone { opacity: 0.10; }
 
   /* Active swipe-up zone — only the central 72px starts a gesture */
   #swipe-zone {
@@ -209,7 +212,8 @@
     background: #808080;
     background: color(display-p3 0.5 0.5 0.5);
     border-radius: 8px 8px 0 0;
-    opacity: 0.05;
+    opacity: 0;
+    transition: opacity 0.2s ease;
     z-index: 31;
     cursor: grab;
   }
@@ -254,8 +258,9 @@
     </div>
   </div>
 
-  <!-- Dock-fill visibility toggle -->
-  <div id="dock-fill-toggle">Dock BG: ON</div>
+  <!-- Corner toggles -->
+  <div id="edge-toggle"      class="corner-toggle">Edges: OFF</div>
+  <div id="dock-fill-toggle" class="corner-toggle">Dock BG: ON</div>
 
   <!-- Deadzone -->
   <div id="deadzone"></div>
@@ -502,8 +507,10 @@ function openApp(key) {
   appScreen.classList.add('open');
 }
 
-// Horizontal swipe + tap on the latched recents carousel
+// Horizontal swipe + tap on the latched recents carousel (with fling momentum)
+const FLING_MOMENTUM_MS = 320; // how far the finger's last velocity carries
 let rDragging = false, rStartX = 0, rBaseOffset = 0, rMoved = false, rStartTarget = null;
+let rPrevX = 0, rPrevT = 0, rVel = 0;
 
 recentsPreview.addEventListener('pointerdown', (e) => {
   if (!recentsLatched) return;
@@ -512,6 +519,9 @@ recentsPreview.addEventListener('pointerdown', (e) => {
   rStartX = e.clientX;
   rStartTarget = e.target; // captured here — pointer capture retargets later events
   rBaseOffset = offsetForIndex(recentsIndex);
+  rPrevX = e.clientX;
+  rPrevT = performance.now();
+  rVel = 0;
   recentsPreview.setPointerCapture(e.pointerId);
 });
 
@@ -519,6 +529,14 @@ recentsPreview.addEventListener('pointermove', (e) => {
   if (!rDragging) return;
   const dx = e.clientX - rStartX;
   if (Math.abs(dx) > 8) rMoved = true;
+  // Track instantaneous horizontal velocity (px/ms)
+  const now = performance.now();
+  const dt = now - rPrevT;
+  if (dt > 0) {
+    rVel = (e.clientX - rPrevX) / dt;
+    rPrevT = now;
+    rPrevX = e.clientX;
+  }
   setRecentsOffset(rBaseOffset + dx, false);
 });
 
@@ -537,8 +555,13 @@ recentsPreview.addEventListener('pointerup', (e) => {
     return;
   }
 
-  // Snap to the nearest card (a decisive flick advances one card)
-  let delta = Math.round(-dx / CARD_STEP);
+  // Project finger displacement + a window of the last velocity (fling).
+  // Ignore stale velocity if the finger paused before releasing.
+  const sinceLast = performance.now() - rPrevT;
+  const v = sinceLast > 80 ? 0 : rVel;
+  const projected = dx + v * FLING_MOMENTUM_MS;
+  let delta = Math.round(-projected / CARD_STEP);
+  // Tiny slow drag past ~22% still advances one card
   if (delta === 0 && Math.abs(dx) > CARD_STEP * 0.22) delta = dx < 0 ? 1 : -1;
   recentsIndex = Math.max(0, Math.min(recentsCards.length - 1, recentsIndex + delta));
   setRecentsOffset(offsetForIndex(recentsIndex), true);
@@ -565,13 +588,19 @@ dockIcons.forEach((icon) => {
   });
 });
 
-// Top-right toggle for dock background fill
-const dockFillToggle = document.getElementById('dock-fill-toggle');
-dockFillToggle.addEventListener('pointerdown', (e) => {
-  e.stopPropagation(); // don't trigger frame-level dismiss/hit handlers
-  const on = frame.classList.toggle('dock-bare');
-  dockFillToggle.textContent = on ? 'Dock BG: OFF' : 'Dock BG: ON';
-});
+// Corner toggles (top-right: dock fill, top-left: bottom-edge visibility)
+function wireToggle(id, cls, labelOn, labelOff, startOn) {
+  const el = document.getElementById(id);
+  if (startOn) frame.classList.add(cls);
+  el.textContent = startOn ? labelOn : labelOff;
+  el.addEventListener('pointerdown', (e) => {
+    e.stopPropagation(); // don't trigger frame-level dismiss/hit handlers
+    const on = frame.classList.toggle(cls);
+    el.textContent = on ? labelOn : labelOff;
+  });
+}
+wireToggle('dock-fill-toggle', 'dock-bare',  'Dock BG: OFF', 'Dock BG: ON',  false);
+wireToggle('edge-toggle',      'show-edges', 'Edges: ON',    'Edges: OFF',   false);
 
 buildRecentsPreview();
 </script>
