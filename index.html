@@ -576,16 +576,26 @@ frame.addEventListener('pointerdown', (e) => {
   unlatchRecents();
 });
 
-// While the recents view is latched, tapping a dock icon launches that app
-dockIcons.forEach((icon) => {
-  icon.addEventListener('pointerdown', (e) => {
-    if (!recentsLatched) return;
-    const app = icon.dataset.app;
-    if (app === 'recent') return; // already on recents — nothing to do
-    e.stopPropagation();
+// Stage 2 gesture: while the recents view is latched, press+drag inside the
+// dock sizes up the icon under the finger (same metaphor as the initial
+// swipe-up). Releasing opens the active app; releasing on the centre/recent
+// slot keeps the recents view open. A simple tap is just the zero-move case.
+dock.addEventListener('pointerdown', (e) => {
+  if (!recentsLatched) return;
+  e.stopPropagation();
+  setActive(nearestIconIndex(e.clientX));
+  frame.setPointerCapture(e.pointerId);
+  const onMove = (ev) => setActive(nearestIconIndex(ev.clientX));
+  const onUp = () => {
+    frame.removeEventListener('pointermove', onMove);
+    frame.removeEventListener('pointerup', onUp);
+    const app = dockIcons[activeIndex].dataset.app;
+    if (app === 'recent') return; // released on the centre slot — stay on recents
     unlatchRecents();
     openApp(APP_COLORS[app]);
-  });
+  };
+  frame.addEventListener('pointermove', onMove);
+  frame.addEventListener('pointerup', onUp);
 });
 
 // Corner toggles (top-right: dock fill, top-left: bottom-edge visibility)
