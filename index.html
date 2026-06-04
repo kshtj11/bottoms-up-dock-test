@@ -32,26 +32,22 @@
     position: absolute;
     inset: 0;
     z-index: 1;
+    background: #000 url('home.png') center / cover no-repeat;
   }
-  .home-icon {
+
+  /* Dim layer behind the recents carousel */
+  #recents-bg {
     position: absolute;
-    width: 56px;
-    height: 56px;
-    background: #D9D9D9;
-    background: color(display-p3 0.851 0.851 0.851);
-    border-radius: 8px;
+    inset: 0;
+    z-index: 8;
+    background: #000000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
   }
-  #home-label {
-    position: absolute;
-    width: 276px;
-    left: 136px;
-    top: 496px;
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 19px;
-    text-align: center;
-    color: #FFFFFF;
+  #recents-bg.visible {
+    opacity: 0.75;
+    pointer-events: auto;
   }
 
   /* Full-screen opened app */
@@ -203,13 +199,14 @@
 <body>
 
 <div id="frame">
-  <!-- Home screen (icons generated in JS) -->
-  <div id="home-screen">
-    <div id="home-label">home screen with something and all</div>
-  </div>
+  <!-- Home screen (image background) -->
+  <div id="home-screen"></div>
 
   <!-- Opened app -->
   <div id="app-screen"></div>
+
+  <!-- Dim layer behind the recents carousel -->
+  <div id="recents-bg"></div>
 
   <!-- Recent apps preview -->
   <div id="recents-preview">
@@ -246,23 +243,17 @@ const dockIcons = Array.from(document.querySelectorAll('.dock-icon'));
 const appScreen = document.getElementById('app-screen');
 const recentsPreview = document.getElementById('recents-preview');
 const recentsTrack = document.getElementById('recents-track');
+const recentsBg = document.getElementById('recents-bg');
 
-// Build the 4×4 home-icon grid (cols at x, rows at y)
-(() => {
-  const homeScreen = document.getElementById('home-screen');
-  const label = document.getElementById('home-label');
-  const frag = document.createDocumentFragment();
-  for (const top of [88, 193, 294, 399]) {
-    for (const left of [78, 187, 296, 405]) {
-      const icon = document.createElement('div');
-      icon.className = 'home-icon';
-      icon.style.left = left + 'px';
-      icon.style.top = top + 'px';
-      frag.appendChild(icon);
-    }
-  }
-  homeScreen.insertBefore(frag, label);
-})();
+// Show/hide the recents view (cards + dim background together)
+function showRecentsView() {
+  recentsPreview.classList.add('visible');
+  recentsBg.classList.add('visible');
+}
+function hideRecentsView() {
+  recentsPreview.classList.remove('visible');
+  recentsBg.classList.remove('visible');
+}
 
 // App color map for full-screen open
 const APP_COLORS = {
@@ -333,9 +324,9 @@ function setActive(index) {
 
   // Recents preview only shows when the recent (center) icon is active
   if (activeIndex === RECENT_INDEX) {
-    recentsPreview.classList.add('visible');
+    showRecentsView();
   } else {
-    recentsPreview.classList.remove('visible');
+    hideRecentsView();
   }
 }
 
@@ -390,7 +381,7 @@ swipeZone.addEventListener('pointerdown', (e) => {
     if (dy > 8 && !revealed) {
       revealed = true;
       dock.classList.add('revealed');
-      recentsPreview.classList.add('visible');
+      showRecentsView();
     }
 
     // Did the swipe reach past the middle of the screen?
@@ -435,26 +426,26 @@ swipeZone.addEventListener('pointerdown', (e) => {
 
 function collapseDock() {
   dock.classList.remove('revealed');
-  if (!recentsLatched) recentsPreview.classList.remove('visible');
+  if (!recentsLatched) hideRecentsView();
 }
 
 function goHome() {
   recentsLatched = false;
   currentApp = null;
   appScreen.classList.remove('open');
-  recentsPreview.classList.remove('visible');
+  hideRecentsView();
   dock.classList.remove('revealed');
 }
 
 function latchRecents() {
   recentsLatched = true;
   dock.classList.add('revealed'); // dock stays persistent on recents
-  recentsPreview.classList.add('visible');
+  showRecentsView();
 }
 
 function unlatchRecents() {
   recentsLatched = false;
-  recentsPreview.classList.remove('visible');
+  hideRecentsView();
   dock.classList.remove('revealed');
 }
 
