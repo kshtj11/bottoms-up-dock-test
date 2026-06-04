@@ -105,8 +105,8 @@
     left: 50%;
     bottom: 26px; /* 16px deadzone + 10px gap */
     transform: translateX(-50%) translateY(140px);
-    width: 396px;
-    height: 72px;
+    width: 464px;
+    height: 73px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -131,38 +131,55 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 36px;
-    width: 396px;
-    height: 72px;
+    gap: 0;
+    width: 464px;
+    height: 73px;
   }
 
+  /* Each dock slot is 100x72 (expanded touch area) with a 72x72 icon centred */
   .dock-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
+    width: 100px;
+    height: 72px;
     flex: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: width 0.18s cubic-bezier(0.22,1,0.36,1), height 0.18s cubic-bezier(0.22,1,0.36,1);
     position: relative;
   }
-  .dock-icon.active {
+  /* Centre slot is the running-apps indicator, slightly narrower */
+  .dock-icon.recent-slot {
     width: 64px;
-    height: 64px;
+    height: 73px;
+    padding: 19px 0;
+    align-items: flex-start;
   }
 
-  /* Dock icons are bare SVG glyphs — no circle frame */
   .dock-svg {
-    width: 60px;
-    height: 60px;
+    width: 72px;
+    height: 72px;
     object-fit: contain;
+    border-radius: 18px;
+    background: rgba(32,32,32,0.35);
+    background: color(display-p3 0.125 0.125 0.125 / 0.35);
     transition: transform 0.18s ease;
     pointer-events: none;
   }
   .dock-icon.active .dock-svg {
     transform: scale(1.2);
   }
+
+  /* Running-apps indicator: three overlapping rounded pills */
+  .rdot {
+    width: 35px;
+    height: 35px;
+    border-radius: 18px;
+    background: #AEAEAE;
+    background: color(display-p3 0.682 0.682 0.682);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    box-shadow: 0 1px 4px color(display-p3 0 0 0 / 0.25);
+    flex: none;
+  }
+  .rdot + .rdot { margin-left: -28px; }
 
   /* Deadzone (Rectangle 37) — full-width black bar, visual only */
   #deadzone {
@@ -248,7 +265,11 @@
       <div class="dock-icon" data-app="green">
         <img class="dock-svg" src="icons/notes-app-icon.png" alt="">
       </div>
-      <div class="dock-icon active" data-app="recent"></div>
+      <div class="dock-icon recent-slot active" data-app="recent">
+        <span class="rdot"></span>
+        <span class="rdot"></span>
+        <span class="rdot"></span>
+      </div>
       <div class="dock-icon" data-app="pink">
         <img class="dock-svg" src="icons/camera-app-icon.png" alt="">
       </div>
