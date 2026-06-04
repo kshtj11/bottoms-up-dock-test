@@ -524,6 +524,10 @@ let rPrevX = 0, rPrevT = 0, rVel = 0;
 
 recentsPreview.addEventListener('pointerdown', (e) => {
   if (!recentsLatched) return;
+  // Only engage the carousel if the press started on an actual card —
+  // presses in the dim margin around cards fall through to the frame-level
+  // dismiss handler (and return you to whatever's behind).
+  if (!e.target.closest('.preview-card')) return;
   rDragging = true;
   rMode = null;
   rStartX = e.clientX;
@@ -623,12 +627,14 @@ recentsPreview.addEventListener('pointerup', (e) => {
   }
 });
 
-// Tap outside the carousel/dock (while latched) to dismiss to home
+// Tap anywhere that isn't a card / dock / edge zone (while latched) →
+// dismiss recents back to whatever is behind (home or the running app).
 frame.addEventListener('pointerdown', (e) => {
   if (!recentsLatched || dragging) return;
-  if (e.target.closest('#recents-preview')) return; // carousel handles its own input
-  if (e.target.closest('#dock')) return;            // dock is persistent
-  if (e.target.closest('#deadzone')) return;         // deadzone starts a new gesture
+  if (e.target.closest('.preview-card')) return;   // card tap = open / handled by carousel
+  if (e.target.closest('#dock')) return;           // dock is persistent
+  if (e.target.closest('#deadzone')) return;       // deadzone is part of the gesture surface
+  if (e.target.closest('#swipe-zone')) return;     // swipe zone starts a new gesture
   unlatchRecents();
 });
 
